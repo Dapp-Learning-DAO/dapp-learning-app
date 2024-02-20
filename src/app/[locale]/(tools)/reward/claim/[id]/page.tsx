@@ -19,6 +19,8 @@ import useSwitchNetwork from "hooks/useSwitchNetwork";
 import { formatUnits, isAddress, parseEventLogs, toBytes } from "viem";
 import { getMerkleTree, hashToken } from "utils/getMerkleTree";
 import useRedpacketContract from "hooks/useRedpacketContract";
+import useRedpacket from "hooks/useRedpacket";
+import { useRouter } from "next/navigation";
 
 export default function RewardClaimPage({
   params: { id },
@@ -29,8 +31,8 @@ export default function RewardClaimPage({
   const chainId = useChainId();
   const alertBoxRef = useRef(null);
   const zkInputRef = useRef(null);
+  const router = useRouter();
 
-  const [item, setItem] = useState<any | null>(null);
   const [root, setRoot] = useState("");
   const [proof, setProof] = useState<string[]>([]);
   const [merkleVerified, setMerkleVrified] = useState(false);
@@ -39,22 +41,7 @@ export default function RewardClaimPage({
   const { isNetworkCorrect, switchNetwork } = useSwitchNetwork();
   const redPacketContract = useRedpacketContract();
 
-  const {
-    data,
-    loading: gqlLoading,
-    refetch,
-  } = useQuery(RedPacketByIdGraph, {
-    variables: {
-      redpacketID: id,
-    },
-    // pollInterval: 30 * 1000,
-    context: { clientName: "RedPacket" },
-  });
-
-  useEffect(() => {
-    if (!address || !data || !data.redpacket) return;
-    setItem(processRedpacketItem(data.redpacket, address, getExpTime()));
-  }, [data, address]);
+  const { data: item, loading: gqlLoading } = useRedpacket({ id });
 
   const isZkRedpacket = !!item && !!item?.hashLock;
 
@@ -307,12 +294,6 @@ export default function RewardClaimPage({
             <button
               className="btn btn-block md:flex-1"
               disabled={writeIsLoading || txIsLoading}
-              onClick={(_e: any) => {
-                // onClose(); @todo
-                if (alertBoxRef.current) {
-                  (alertBoxRef.current as any).reset();
-                }
-              }}
             >
               Close
             </button>

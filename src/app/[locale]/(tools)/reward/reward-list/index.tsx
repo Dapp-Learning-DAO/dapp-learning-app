@@ -16,7 +16,7 @@ export default function RewardList() {
   const [refetchCount, setRefetchCount] = useState(0);
   const { unclaimList, claimedList, expiredList, createdList, loading } =
     useRedpacketsLists({ enabled: true, refetchCount });
-  console.warn({unclaimList, claimedList, expiredList, createdList})
+  console.warn({ unclaimList, claimedList, expiredList, createdList });
 
   // @todo no need to refetch when click tab
   useDebounce(
@@ -72,7 +72,7 @@ export default function RewardList() {
                     key={index}
                     item={item}
                     onClick={() => {
-                      router.push(`/reward/claim/${item.id}`)
+                      router.push(`/reward/claim/${item.id}`);
                     }}
                   />
                 );
@@ -94,7 +94,7 @@ export default function RewardList() {
                     key={index}
                     item={item}
                     onClick={() => {
-                      
+                      router.push(`/reward/claimed_expired/${item.id}`);
                     }}
                   />
                 );
@@ -116,7 +116,7 @@ export default function RewardList() {
                     key={index}
                     item={item}
                     onClick={() => {
-                      
+                      router.push(`/reward/claimed_expired/${item.id}`);
                     }}
                   />
                 );
@@ -139,7 +139,7 @@ export default function RewardList() {
                     item={item}
                     isCreator
                     onClick={() => {
-                      
+                      router.push(`/reward/created/${item.id}`);
                     }}
                   />
                 );

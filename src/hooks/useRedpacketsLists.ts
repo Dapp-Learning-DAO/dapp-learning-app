@@ -99,7 +99,7 @@ export function processRedpacketItem(
   address: `0x${string}`,
   _blockts: number
 ) {
-  const isExpired = _blockts > item?.expireTime;
+  const isExpired = _blockts > Number(item?.expireTimestamp);
 
   let tokenAddress: string | null = null;
   let decimals: number | null = null;

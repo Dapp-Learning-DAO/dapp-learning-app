@@ -107,7 +107,7 @@ export default function RedPacketInfo({
           )}
           <p className="text-base leading-8">
             Expire Time:{" "}
-            {moment(item?.expireTime * 1000).format("YYYY-MM-DD \u00A0 HH:mm")}
+            {moment(item?.expireTimestamp * 1000).format("YYYY-MM-DD \u00A0 HH:mm")}
           </p>
           <div className="text-bas leading-8 py-4">
             Claimers: <br />

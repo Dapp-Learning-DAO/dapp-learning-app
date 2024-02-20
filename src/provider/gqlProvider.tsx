@@ -22,7 +22,6 @@ let subgraphRedPacketUri: { [key: number]: string } = {
 };
 
 export const createGQLclient = (_chainId: number) => {
-  // console.log("createGQLclient chian id:", _chainId, uri);
   let RedPacketLink = subgraphRedPacketUri[_chainId];
 
   const defaultLink = new HttpLink({
