@@ -1,4 +1,4 @@
-# dapp-learning-dapp
+# dapp-learning-app
 
 The Dapp Toolkit of Dapp-learning
 

@@ -11,6 +11,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { http } from "viem";
 import Image from "next/image";
 import JazziconAvatar from "components/jazzicon-avatar";
+import GqlProvider from "./gqlProvider";
 
 export const queryClient = new QueryClient();
 
@@ -74,7 +75,7 @@ const CustomAvatar: AvatarComponent = ({ address, ensImage, size }) => {
     />
   ) : (
     <div style={{ width: size, height: size }}>
-      <JazziconAvatar address={address} diameter={size}/>
+      <JazziconAvatar address={address} diameter={size} />
     </div>
   );
 };
@@ -88,7 +89,7 @@ export function Web3Providers({ children }: { children: React.ReactNode }) {
           showRecentTransactions
           modalSize="compact"
         >
-          {children}
+          <GqlProvider>{children}</GqlProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
