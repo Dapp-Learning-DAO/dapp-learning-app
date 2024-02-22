@@ -1,7 +1,7 @@
 "use client";
-// components/Jazzicon.js
-import React, { forwardRef, useEffect, useState } from "react";
+// @ts-ignore
 import jazzicon from "@metamask/jazzicon";
+import React, { forwardRef, useEffect, useState } from "react";
 
 const JazziconAvatar = forwardRef(
   (

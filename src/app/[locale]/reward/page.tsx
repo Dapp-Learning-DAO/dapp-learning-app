@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Loading from "./loading";
-import RewardList from "./reward-list";
+import RewardList from "./rewardComponents/RewardList";
 
 export default function RewardListPage() {
   return (

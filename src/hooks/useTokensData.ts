@@ -11,11 +11,11 @@ import { useAccount, useChainId, useReadContracts } from "wagmi";
 import { useCustomEvent } from "./useCustomEvent";
 import { IChainTokenConfs, ITokenConf } from "types/tokenTypes";
 
-export default function useTokensData({
-  watchTokens,
-}: {
-  watchTokens: Set<`0x${string}`>;
-}) {
+export type IuseTokensDataProps = {
+  watchTokens?: Set<`0x${string}`>;
+};
+
+export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
   const { address } = useAccount();
   const chainId = useChainId();
   const [readArgs, setReadArgs] = useState<any[]>([]);
@@ -79,8 +79,9 @@ export default function useTokensData({
   });
 
   useEffect(() => {
+    if (!address || !watchTokens) return;
+
     let args: any[] = [];
-    if (!address) return;
     let _tokenData = { ...tokenData };
 
     for (let _token of watchTokens) {
@@ -120,7 +121,7 @@ export default function useTokensData({
   }, [watchTokens, address, tokenData]);
 
   useEffect(() => {
-    if (readData) {
+    if (readData && watchTokens) {
       console.log("useTokensData readContracts res", readData);
       let _tokenData = { ...tokenData };
       let _tokenDecimals = { ...tokenDecimals };

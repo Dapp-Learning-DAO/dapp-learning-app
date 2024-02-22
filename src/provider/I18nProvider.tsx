@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { I18nProviderClient } from "locales/client";
-import AppLayout from "components/app-layout";
+import AppLayout from "components/AppContainer";
 
 type ProviderProps = {
   locale: string;

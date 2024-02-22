@@ -1,10 +1,10 @@
 "use client"
 
 import moment from "moment";
-import RedpacketIcon from "../redpacket-icons/redpacket-icon";
-import SuccessIcon from "../redpacket-icons/success-icon";
-import CoinIcon from "../redpacket-icons/coin-icon";
-import RedpacketZKIcon from "../redpacket-icons/redpacket-zk-icon";
+import RedpacketIcon from "./RedpacketIcons/RedpacketIcon";
+import SuccessIcon from "./RedpacketIcons/RedpacketSuccessIcon";
+import CoinIcon from "./RedpacketIcons/CoinIcon";
+import RedpacketZKIcon from "./RedpacketIcons/RedpacketZkIcon";
 import { numAutoToFixed } from "utils/index";
 
 export default function RedPacketItem({

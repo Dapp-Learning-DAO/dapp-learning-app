@@ -7,7 +7,7 @@ import { useDebounce } from "react-use";
 import useTokensData from "./useTokensData";
 import { formatUnits } from "viem";
 import { ZERO_BYTES32 } from "../constant";
-import { IclaimerItem } from "types/rewardTypes";
+import { IRewardClaimer } from "types/rewardTypes";
 
 const mockIds: string[] = [
   "0x88d2ca1b5c34678b71b453645ff1c6e9b5ce8ddf8ae821c84d7d817c5ac01c05",
@@ -113,7 +113,7 @@ export function processRedpacketItem(
 
   let claimedValueParsed = null;
   // @todo map from addressList
-  let claimers: IclaimerItem[] = item.claimers.map(
+  let claimers: IRewardClaimer[] = item.claimers.map(
     (claimerItem: { id: string; claimer: string; claimedValue: string }) => {
       let findRes;
       findRes = claimerItem;
@@ -143,7 +143,7 @@ export function processRedpacketItem(
   );
 
   const isClaimed = claimers.some(
-    (claimerItem: IclaimerItem) =>
+    (claimerItem: IRewardClaimer) =>
       claimerItem.address.toLowerCase() == address?.toLowerCase()
   );
   const hashLock =
@@ -153,7 +153,7 @@ export function processRedpacketItem(
   const allClaimed = item?.allClaimed;
   const isRefunded = item?.refunded;
   const userClaimedValue = claimers.find(
-    (claimerItem: IclaimerItem) =>
+    (claimerItem: IRewardClaimer) =>
       claimerItem.address.toLowerCase() === address?.toLowerCase()
   )?.claimedValueParsed;
   

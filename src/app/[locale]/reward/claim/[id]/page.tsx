@@ -12,8 +12,8 @@ import {
   useWriteContract,
 } from "wagmi";
 import ZKTag from "../../redpacket-icons/zktag";
-import RedPacketInfo from "../../redpacket-info";
-import AlertBox, { showAlertMsg } from "components/alert-box";
+import RedPacketInfo from "../../rewardComponents/RedpacketInfo";
+import AlertBox, { showAlertMsg } from "components/AlertBox";
 import RewardZksnarkProveInput from "../../zksnark-prove-input";
 import useSwitchNetwork from "hooks/useSwitchNetwork";
 import { formatUnits, isAddress, parseEventLogs, toBytes } from "viem";
@@ -267,7 +267,7 @@ export default function RewardClaimPage({
           </div>
         )}
         <AlertBox ref={alertBoxRef} />
-        <form method="dialog">
+        <div>
           <div
             className={`mt-4 md:modal-action w-full ${
               !item?.isExpired
@@ -298,7 +298,7 @@ export default function RewardClaimPage({
               Close
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </>
   );

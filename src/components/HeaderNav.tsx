@@ -1,7 +1,7 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { SIDE_NAV_WIDTH } from "./side-nav";
+import { SIDE_NAV_WIDTH } from "./SideNav";
 import { forwardRef } from "react";
 
 const HeaderNav = forwardRef((props, ref: any) => {

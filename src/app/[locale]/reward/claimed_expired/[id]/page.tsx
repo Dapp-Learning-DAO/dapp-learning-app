@@ -2,7 +2,7 @@
 
 import useRedpacket from "hooks/useRedpacket";
 import ZKTag from "../../redpacket-icons/zktag";
-import RedPacketInfo from "../../redpacket-info";
+import RedPacketInfo from "../../rewardComponents/RedpacketInfo";
 import { useRouter } from "next/navigation";
 
 export default function RewardClaimedExpiredPage({

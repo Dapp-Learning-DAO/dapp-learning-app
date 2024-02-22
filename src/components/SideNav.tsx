@@ -4,8 +4,8 @@ import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import LocalesSelector from "./locales-selector";
-import ThemeSelector from "./theme-selector";
+import LocalesSelector from "./LocalesSelector";
+import ThemeSelector from "./ThemeSelector";
 import useTheme from "hooks/useTheme";
 import { forwardRef } from "react";
 
@@ -18,7 +18,6 @@ const NAV_LINKS = [
       { name: "Home", link: "/" },
       { name: "Reward", link: "/reward" },
       { name: "Transaction Builder", link: "/txbuilder" },
-      { name: "Dashboard", link: "/dashboard" },
     ],
   },
 ];

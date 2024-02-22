@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "components/modal";
+import { Modal } from "components/Modal";
 import RewardClaimPage from "../../../../(tools)/reward/claim/[id]/page";
 import { useParams } from "next/navigation";
 

@@ -1,11 +1,11 @@
 "use client";
 
-import SideNav, { SIDE_NAV_WIDTH } from "components/side-nav";
-import Footer from "components/footer";
-import HeaderNav from "./header-nav";
+import SideNav, { SIDE_NAV_WIDTH } from "components/SideNav";
+import Footer from "components/Footer";
+import HeaderNav from "./HeaderNav";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export default function AppLayout({
+export default function AppContainer({
   children,
 }: Readonly<{
   children: React.ReactNode;

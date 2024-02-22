@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Loading from "./loading";
-import AppLayout from "components/app-layout";
+import AppLayout from "components/AppContainer";
 
 export default function TxBuilderPage() {
   return (

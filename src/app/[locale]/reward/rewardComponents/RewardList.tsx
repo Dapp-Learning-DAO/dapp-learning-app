@@ -1,11 +1,11 @@
 "use client";
 import { PlusIcon } from "@heroicons/react/24/outline";
-import AutoSwitchNetwork from "components/auto-switch-network";
+import AutoSwitchNetwork from "components/AutoSwitchNetwork";
 import useRedpacketsLists from "hooks/useRedpacketsLists";
 import Link from "next/link";
 import { useState } from "react";
 import { useDebounce } from "react-use";
-import RedPacketItem from "./reward-item";
+import RedPacketItem from "./RewardItem";
 import { useRouter } from "next/navigation";
 
 const tabList = ["Claimable", "Claimed", "Expired", "Created"];

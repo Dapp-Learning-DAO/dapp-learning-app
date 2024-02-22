@@ -5,7 +5,7 @@ import {
   TiwtterIcon,
   WechatIcon,
   YoutubeIcon,
-} from "./community-icon";
+} from "./CommunityIcon";
 
 const year = new Date().getFullYear();
 

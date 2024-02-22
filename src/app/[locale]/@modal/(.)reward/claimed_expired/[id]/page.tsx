@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "components/modal";
+import { Modal } from "components/Modal";
 import { useParams } from "next/navigation";
 import RewardClaimedExpiredPage from "../../../../(tools)/reward/claimed_expired/[id]/page";
 

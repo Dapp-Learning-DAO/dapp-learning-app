@@ -10,7 +10,7 @@ import { I18nProvider } from "provider/I18nProvider";
 import { Web3Providers } from "provider/Web3Providers";
 
 // components
-import AppLayout from "components/app-layout";
+import AppLayout from "components/AppContainer";
 
 const inter = Inter({ subsets: ["latin"] });
 const title =

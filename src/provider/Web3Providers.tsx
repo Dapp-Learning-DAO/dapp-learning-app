@@ -10,7 +10,7 @@ import { optimism, arbitrum, scroll, sepolia } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { http } from "viem";
 import Image from "next/image";
-import JazziconAvatar from "components/jazzicon-avatar";
+import JazziconAvatar from "components/JazziconAvatar";
 import GqlProvider from "./gqlProvider";
 
 export const queryClient = new QueryClient();
