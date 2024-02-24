@@ -10,7 +10,7 @@ import { ZERO_BYTES32 } from "../constant";
 import { IRewardClaimer } from "types/rewardTypes";
 
 const mockIds: string[] = [
-  "0x88d2ca1b5c34678b71b453645ff1c6e9b5ce8ddf8ae821c84d7d817c5ac01c05",
+  "0x2cf22840d0dcd54460ae96e431bcac29331c5817b05106540605e347bc7aae1b",
 ];
 
 export function getExpTime() {

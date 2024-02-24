@@ -20,6 +20,8 @@
       }
     ],
     "paths": {
+      "src/*": ["./src/*"],
+      "app/*": ["./src/app/[locale]/*"],
       "context/*": ["./src/context/*"],
       "hooks/*": ["./src/hooks/*"],
       "constant/*": ["./src/constant/*"],

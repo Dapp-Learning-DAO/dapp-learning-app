@@ -60,16 +60,17 @@ export default function RewardClaimPage({
       ? [item ? item?.id : null, proof, zkproof?.a, zkproof?.b, zkproof?.c]
       : [item ? item?.id : null, proof],
     query: {
-      enabled:
+      enabled: !!(
         isNetworkCorrect() &&
-        !!item &&
-        !!item?.id &&
+        item &&
+        item?.id &&
         !item?.isClaimed &&
         !item?.isExpired &&
         ((isZkRedpacket && zkproof) || !isZkRedpacket) &&
         merkleVerified &&
-        !!redPacketContract &&
-        isAddress(redPacketContract?.address as string),
+        redPacketContract &&
+        isAddress(redPacketContract?.address as string)
+      ),
     },
   });
 
@@ -132,7 +133,8 @@ export default function RewardClaimPage({
           eventName: ["ClaimSuccess"],
           logs: txRes.logs,
         });
-        const _event = logs[0];
+        debugger;
+
         // const contractInterface = new Interface(redPacketContract.abi);
         // const _event = txRes.logs.find(
         //   (_log) =>

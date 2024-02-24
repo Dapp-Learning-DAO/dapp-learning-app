@@ -14,9 +14,11 @@ export type IRewardCreateForm = {
   name: string;
   enablePassword: boolean;
   password: string;
+  lockBytes: string | null;
   mode: boolean;
   tokenType: number; // 0 | 1
   members: `0x${string}`[];
+  merkleRoot: string | null;
   tokenAmount: number | string;
   tokenAmountParsed: bigint;
   duration: number;

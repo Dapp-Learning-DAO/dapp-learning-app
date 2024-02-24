@@ -21,10 +21,12 @@ const AddressListInput = forwardRef(
     {
       onAddressChange,
       onChange,
+      disabled,
       ...rest
     }: {
       onAddressChange: (_addressList: `0x${string}`[]) => void;
       onChange?: (_addressList: `0x${string}`[]) => void;
+      disabled?: boolean | undefined;
       // onChange?: (_e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     },
     ref: any
@@ -97,6 +99,7 @@ const AddressListInput = forwardRef(
     }, [textareaVal, addresses]);
 
     const handleRemoveAddress = (_address: string) => {
+      if (disabled) return;
       setAddresses((prev) => {
         const newSet = new Set(prev);
         newSet.delete(_address);
@@ -180,6 +183,7 @@ const AddressListInput = forwardRef(
                 placeholder="input address and press enter"
                 className="textarea textarea-bordered flex-1 mr-4"
                 onKeyDown={handleInputAddAddress}
+                disabled={disabled}
               />
             </div>
             {errorTxt ? (
@@ -202,6 +206,7 @@ const AddressListInput = forwardRef(
                 placeholder="input address and press enter"
                 className="textarea textarea-bordered flex-1 pb-12 mr-4"
                 onChange={handleTextareaChange}
+                disabled={disabled}
               />
               {textareaVal && (
                 <div className="flex justify-end items-center absolute bottom-2 right-6">

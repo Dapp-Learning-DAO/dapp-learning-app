@@ -1,4 +1,4 @@
-import useZKsnark from "hooks/useZKsnark.js";
+import useZKsnark from "hooks/useZKsnark";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { useDebounce } from "react-use";
 

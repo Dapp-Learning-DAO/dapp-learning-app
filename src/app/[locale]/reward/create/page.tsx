@@ -6,17 +6,11 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { MerkleTree } from "merkletreejs";
 import Link from "next/link";
-import { encodePacked, keccak256 } from "viem";
-
-import { hashToken } from "utils/getMerkleTree";
 import ApproveBtn from "components/ApproveBtn";
 import RewardCreateForm from "./RewardCreateForm";
 import AlertBox, { showAlertMsg } from "components/AlertBox";
 import AutoSwitchNetwork from "components/AutoSwitchNetwork";
-import useZKsnark from "hooks/useZKsnark";
-import validate from "utils/validate";
 import useRedpacketContract from "hooks/useRedpacketContract";
 import { ZERO_BYTES32 } from "constant/index";
 import { IRewardCreateForm } from "types/rewardTypes";
@@ -27,16 +21,11 @@ export default function CreateRedpacketPage() {
   const alertBoxRef = useRef(null);
   const approveBtnRef = useRef(null);
   const redPacketContract = useRedpacketContract();
-  const { calculatePublicSignals } = useZKsnark();
 
   const [selectedTokenAddr, setSelectedTokenAddr] = useState<string>("");
   const [isApproved, setIsApproved] = useState(false);
   const [exceptedAllowance, setExceptedAllowance] = useState(0n);
   const [formData, setFormData] = useState<IRewardCreateForm | null>(null);
-  const [merkleTreeInstance, setMerkleTreeInstance] = useState<any | null>(
-    null
-  );
-  const [lockBytes, setLockBytes] = useState<string | null>(null);
   const [ipfsCid, setIpfsCid] = useState<string | null>(null);
   // const [showConfetti, setShowConfetti] = useState(false);
   const [submitClicked, setSubmitClicked] = useState(false);
@@ -52,8 +41,8 @@ export default function CreateRedpacketPage() {
     abi: redPacketContract?.abi,
     functionName: "create_red_packet",
     args: [
-      merkleTreeInstance?.getHexRoot(),
-      lockBytes ? lockBytes : ZERO_BYTES32,
+      formData?.merkleRoot,
+      formData?.lockBytes ? formData?.lockBytes : ZERO_BYTES32,
       formData?.number,
       formData?.mode,
       formData
@@ -69,17 +58,10 @@ export default function CreateRedpacketPage() {
       enabled: !!(
         redPacketContract &&
         redPacketContract?.address &&
-        merkleTreeInstance &&
         formData &&
         isApproved &&
-        formData.isValid
-        // (formData?.password ? lockBytes : true) &&
-        // formData?.number > 0 &&
-        // formData?.duration > 0 &&
-        // formData?.tokenType in [0, 1] &&
-        // formData?.tokenObj &&
-        // formData?.tokenObj?.address &&
-        // formData?.tokenAmountParsed > 0
+        formData.isValid &&
+        formData.merkleRoot
       ),
     },
   });
@@ -137,41 +119,14 @@ export default function CreateRedpacketPage() {
     !writeCreateRepacket ||
     writeIsError ||
     !isApproved ||
-    (formData?.password && !lockBytes);
+    !formData?.isValid;
 
   const clearForm = () => {
     if (formRef.current) {
-      (formRef.current as any).clean();
+      (formRef.current as any).reset();
     }
   };
 
-  const handleMerkleTree = useCallback(() => {
-    if (!formData || !formData.members) return;
-    const addressList = formData.members;
-    if (addressList.length > 0) {
-      const merkleTree = new MerkleTree(
-        addressList?.map((address) => hashToken(address)),
-        keccak256,
-        { sortPairs: true }
-      );
-      setMerkleTreeInstance(merkleTree);
-      console.log("handleMerkleTree root:", merkleTree.getHexRoot());
-    } else {
-      setMerkleTreeInstance(null);
-    }
-  }, [formData]);
-
-  const handlePassword = useCallback(
-    async (_password: string) => {
-      if (_password && validate.isValidZKpasswordInput(_password)) {
-        const outputHash = await calculatePublicSignals(_password);
-        setLockBytes(outputHash);
-      } else {
-        setLockBytes(null);
-      }
-    },
-    [calculatePublicSignals]
-  );
 
   useEffect(() => {
     if (formData) {
@@ -181,22 +136,13 @@ export default function CreateRedpacketPage() {
       if (formData.tokenObj) {
         setSelectedTokenAddr(formData?.tokenObj?.address);
       }
-      if (formData.members) {
-        handleMerkleTree();
-      }
-      handlePassword(formData.password);
     }
-  }, [formData, handleMerkleTree, handlePassword]);
+  }, [formData]);
 
   const handleSubmit = async (_e: any) => {
     if (submitClicked || submitDisabled || submitLoading) return;
     if (!formRef.current) return;
     setSubmitClicked(true);
-    if (!(await (formRef.current as any).validate())) {
-      showAlertMsg(alertBoxRef, "input invalid, please modify.", "error");
-      setSubmitClicked(false);
-      return;
-    }
 
     console.warn("createWriteSimRes", createWriteSimRes);
     if (
@@ -228,21 +174,9 @@ export default function CreateRedpacketPage() {
     setSubmitClicked(false);
   };
 
-  const beforeSendCreationTx = async (form: any) => {
+  const beforeSendCreationTx = async (form: IRewardCreateForm) => {
     return new Promise(async (resolve, reject) => {
-      try {
-        sessionStorage.setItem(
-          form.nameUnique,
-          JSON.stringify({
-            name: form?.nameUnique,
-            members: form?.members,
-            timestamp: form?.cache_timestamp,
-          })
-        );
-      } catch (error) {
-        console.error("beforeSendCreationTx error", error);
-        reject(error);
-      }
+      
 
       try {
         // save addressList to ipfs
@@ -250,8 +184,8 @@ export default function CreateRedpacketPage() {
         const expireTime =
           Math.floor(new Date().getTime() / 1000) + Number(form.duration);
         const params = {
-          hashLock: lockBytes,
-          name: form.nameUnique,
+          hashLock: form.lockBytes,
+          name: form.name,
           chainId: chain?.id,
           address: address,
           creator: address,

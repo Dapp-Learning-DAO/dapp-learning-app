@@ -1,6 +1,13 @@
 "use client";
-import { useState, useEffect, forwardRef, useMemo, useRef } from "react";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import {
+  useState,
+  useEffect,
+  forwardRef,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
+import { useForm, Controller } from "react-hook-form";
 import Validate from "utils/validate";
 import TokenAmountInput from "components/TokenAmountInput";
 import TokenSelector from "components/TokenSelector";
@@ -8,15 +15,21 @@ import { IRewardCreateForm } from "types/rewardTypes";
 import AddressListInput from "components/AddressListInput";
 import { ITokenConf } from "types/tokenTypes";
 import { useDebounce } from "react-use";
+import useZKsnark from "hooks/useZKsnark";
+import { keccak256 } from "viem";
+import { MerkleTree } from "merkletreejs";
+import { hashToken } from "utils/getMerkleTree";
 
 const defaultValues: IRewardCreateForm = {
   isValid: false,
   name: "Lucky RedPacket",
   enablePassword: false,
   password: "",
+  lockBytes: null,
   mode: true,
   tokenType: 1,
   members: [],
+  merkleRoot: null,
   tokenAmount: 0,
   tokenAmountParsed: 0n,
   duration: 1,
@@ -39,6 +52,7 @@ const RewardCreateForm = forwardRef(
     const [enablePassword, setEnablePassword] = useState(false);
     const [tokenObj, setTokenObj] = useState<ITokenConf | null>(null);
     const [changeCount, setChangeCount] = useState(0);
+    const { calculatePublicSignals } = useZKsnark();
 
     const {
       register,
@@ -94,12 +108,51 @@ const RewardCreateForm = forwardRef(
       return true;
     };
 
+    // convert password to public signal
+    const passwordWatchData = watch("password");
+    useDebounce(
+      async () => {
+        if (
+          passwordWatchData &&
+          Validate.isValidZKpasswordInput(passwordWatchData)
+        ) {
+          const outputHash = await calculatePublicSignals(
+            passwordWatchData as string
+          );
+          setValue("lockBytes", outputHash);
+        } else {
+          setValue("lockBytes", null);
+        }
+        setChangeCount((prev) => prev + 1);
+      },
+      500,
+      [calculatePublicSignals, setValue, passwordWatchData]
+    );
+
+    // generate merkle root
+    const membersWatchData = watch("members");
+    useDebounce(
+      () => {
+        if (membersWatchData.length > 0) {
+          const merkleTree = new MerkleTree(
+            membersWatchData?.map((address) => hashToken(address)),
+            keccak256,
+            { sortPairs: true }
+          );
+          const merkleRoot = merkleTree.getHexRoot();
+          setValue("merkleRoot", merkleRoot);
+          console.log("handleMerkleTree root:", merkleRoot);
+        } else {
+          setValue("merkleRoot", null);
+        }
+        setChangeCount((prev) => prev + 1);
+      },
+      500,
+      [membersWatchData, setValue]
+    );
+
     const handleFormChange = async (data: IRewardCreateForm | null) => {
       if (!data) data = getValues();
-      // const tokenAmountValidation = tokenAmountValidate(data.tokenAmount, data);
-      // console.warn(tokenAmountValidation)
-      // if (tokenAmountValidation) {
-      // }
       data.isValid = isValid;
       onChange(data);
     };
@@ -112,8 +165,14 @@ const RewardCreateForm = forwardRef(
       [changeCount]
     );
 
+    useEffect(() => {
+      if (ref.current) {
+        ref.current.reset = reset;
+      }
+    }, [ref, reset]);
+
     return (
-      <form onChange={() => setChangeCount((prev) => prev + 1)}>
+      <form ref={ref} onChange={() => setChangeCount((prev) => prev + 1)}>
         <div className="pb-4" ref={ref}>
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
             <strong>Name</strong>
