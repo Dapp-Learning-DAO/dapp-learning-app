@@ -14,6 +14,7 @@ import AutoSwitchNetwork from "components/AutoSwitchNetwork";
 import useRedpacketContract from "hooks/useRedpacketContract";
 import { ZERO_BYTES32 } from "constant/index";
 import { IRewardCreateForm } from "types/rewardTypes";
+import { pinJSONToIPFS } from "src/utils/IPFS";
 
 export default function CreateRedpacketPage() {
   const { address, chain } = useAccount();
@@ -22,6 +23,7 @@ export default function CreateRedpacketPage() {
   const approveBtnRef = useRef(null);
   const redPacketContract = useRedpacketContract();
 
+  const [ts, setTs] = useState(Math.floor(new Date().getTime() / 1000));
   const [selectedTokenAddr, setSelectedTokenAddr] = useState<string>("");
   const [isApproved, setIsApproved] = useState(false);
   const [exceptedAllowance, setExceptedAllowance] = useState(0n);
@@ -33,8 +35,9 @@ export default function CreateRedpacketPage() {
   const {
     data: createWriteSimRes,
     error: createWriteSimError,
+    isSuccess: simIsSuccess,
     isLoading: simWriteLoading,
-    // refetch: refetchsim,
+    refetch: refetchsim,
   } = useSimulateContract({
     chainId: chain?.id,
     address: redPacketContract?.address as `0x${string}`,
@@ -48,7 +51,7 @@ export default function CreateRedpacketPage() {
       formData
         ? formData?.duration * Number(formData?.durationUnit)
         : 24 * 60 * 60,
-      ipfsCid,
+      `${ts}_${ipfsCid ? ipfsCid : ""}`,
       formData?.name,
       formData?.tokenType,
       formData?.tokenObj?.address,
@@ -94,6 +97,7 @@ export default function CreateRedpacketPage() {
   });
 
   const reset = useCallback(() => {
+    setSubmitClicked(false);
     setFormData(null);
     setIpfsCid(null);
     writeReset();
@@ -107,8 +111,7 @@ export default function CreateRedpacketPage() {
     if (txRes) {
       showAlertMsg(alertBoxRef, "Create Successfully!", "success");
       console.log("CreationSuccess", txRes);
-      clearForm();
-      // showCongrats();
+      showCongrats();
     }
   }, [txRes, txIsError, reset]);
 
@@ -120,13 +123,6 @@ export default function CreateRedpacketPage() {
     writeIsError ||
     !isApproved ||
     !formData?.isValid;
-
-  const clearForm = () => {
-    if (formRef.current) {
-      (formRef.current as any).reset();
-    }
-  };
-
 
   useEffect(() => {
     if (formData) {
@@ -151,60 +147,35 @@ export default function CreateRedpacketPage() {
       typeof writeCreateRepacket == "function"
     ) {
       try {
-        await beforeSendCreationTx(formData);
+        const ipfsHash = await beforeSendCreationTx(formData);
+        // ipfsHash is change, shuold update calldata
+        await refetchsim();
       } catch (error) {
         console.error("beforeSendCreationTx error", error);
         showAlertMsg(alertBoxRef, "Create Reward faild.", "error");
         setSubmitClicked(false);
         return;
       }
-      try {
-        await writeCreateRepacket?.(createWriteSimRes!.request);
-        // setCreateTx(hash);
-      } catch (error) {
-        console.error("writeCreateRepacket error", error);
-        showAlertMsg(alertBoxRef, "Create Reward faild.", "error");
-        setTimeout(() => {
-          reset();
-        }, 1000);
-      }
     } else {
       showAlertMsg(alertBoxRef, "transaction is not ready, please try later.");
+      setSubmitClicked(false);
     }
-    setSubmitClicked(false);
   };
 
   const beforeSendCreationTx = async (form: IRewardCreateForm) => {
     return new Promise(async (resolve, reject) => {
-      
-
       try {
-        // save addressList to ipfs
-        // let _id: string = ;
-        const expireTime =
-          Math.floor(new Date().getTime() / 1000) + Number(form.duration);
-        const params = {
-          hashLock: form.lockBytes,
-          name: form.name,
-          chainId: chain?.id,
-          address: address,
-          creator: address,
-          addressList: form?.members,
-          expireTime: expireTime,
-          ifRandom: form?.mode,
-          token: form?.tokenObj?.address,
-          tokenName: form?.tokenObj?.name,
-          tokenSymbol: form?.tokenObj?.symbol,
-          tokenDecimal: form?.tokenObj?.decimals,
-          number: Number(form.number),
-          totalAmount: Number(form.tokenAmount),
-        };
-        console.warn("save packet params", params);
-
-        // @todo ipfs upload
-        // const savePacketRes = await RewardApi.save(params);
-        // console.warn("savePacketRes", savePacketRes);
-        resolve(true);
+        const res = await pinJSONToIPFS({
+          dataBody: form?.members,
+          filename: form?.merkleRoot as string,
+        });
+        console.warn("save packet address list to IPFS", res);
+        if (res?.IpfsHash) {
+          setIpfsCid(res.IpfsHash);
+          resolve(res.IpfsHash);
+        } else {
+          reject("no cid");
+        }
       } catch (error) {
         console.error("save packet error:", error);
         setIpfsCid("");
@@ -213,12 +184,39 @@ export default function CreateRedpacketPage() {
     });
   };
 
-  // const showCongrats = () => {
-  //   setShowConfetti(true);
-  //   (document as any)
-  //     .querySelector("#redpacket_create_success_modal")
-  //     .showModal();
-  // };
+  // after click submit, and ipfs data uploaded,
+  // will resim the contract write func
+  useEffect(() => {
+    if (
+      !submitClicked ||
+      !ipfsCid ||
+      !simIsSuccess
+    )
+      return;
+    try {
+      writeCreateRepacket?.(createWriteSimRes!.request);
+    } catch (error) {
+      console.error("writeCreateRepacket error", error);
+      showAlertMsg(alertBoxRef, "Create Reward faild.", "error");
+      setTimeout(() => {
+        reset();
+      }, 1000);
+    }
+  }, [
+    submitClicked,
+    ipfsCid,
+    simIsSuccess,
+    createWriteSimRes,
+    writeCreateRepacket,
+    reset,
+  ]);
+
+  const showCongrats = () => {
+    // setShowConfetti(true);
+    (document as any)
+      .querySelector("#redpacket_create_success_modal")
+      .showModal();
+  };
 
   useEffect(() => {
     const dialog = (document as any).querySelector(

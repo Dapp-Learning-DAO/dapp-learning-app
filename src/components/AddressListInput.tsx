@@ -115,7 +115,6 @@ const AddressListInput = forwardRef(
           const text = e.target?.result?.toString();
           if (file.name.endsWith(".json")) {
             const json = JSON.parse(text!);
-            // 假设 JSON 文件格式是数组 ["0x...", "0x..."]
             const validAddresses = json.filter((addr: string) =>
               isAddress(addr)
             );

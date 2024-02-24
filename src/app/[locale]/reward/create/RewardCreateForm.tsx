@@ -165,12 +165,6 @@ const RewardCreateForm = forwardRef(
       [changeCount]
     );
 
-    useEffect(() => {
-      if (ref.current) {
-        ref.current.reset = reset;
-      }
-    }, [ref, reset]);
-
     return (
       <form ref={ref} onChange={() => setChangeCount((prev) => prev + 1)}>
         <div className="pb-4" ref={ref}>
