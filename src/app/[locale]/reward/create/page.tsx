@@ -60,6 +60,7 @@ export default function CreateRedpacketPage() {
         ? formData?.duration * Number(formData?.durationUnit)
         : 24 * 60 * 60,
       ipfsCid,
+      formData?.name,
       formData?.tokenType,
       formData?.tokenObj?.address,
       formData?.tokenAmountParsed,
@@ -71,13 +72,14 @@ export default function CreateRedpacketPage() {
         merkleTreeInstance &&
         formData &&
         isApproved &&
-        (formData?.password ? lockBytes : true) &&
-        formData?.number > 0 &&
-        formData?.duration > 0 &&
-        formData?.tokenType in [0, 1] &&
-        formData?.tokenObj &&
-        formData?.tokenObj?.address &&
-        formData?.tokenAmountParsed > 0
+        formData.isValid
+        // (formData?.password ? lockBytes : true) &&
+        // formData?.number > 0 &&
+        // formData?.duration > 0 &&
+        // formData?.tokenType in [0, 1] &&
+        // formData?.tokenObj &&
+        // formData?.tokenObj?.address &&
+        // formData?.tokenAmountParsed > 0
       ),
     },
   });

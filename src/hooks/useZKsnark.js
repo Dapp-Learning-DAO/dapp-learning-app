@@ -56,6 +56,7 @@ export default function useZKsnark() {
     [snarkjsInited],
   );
 
+  // @todo need optimization
   useEffect(() => {
     if (typeof snarkjs !== "undefined") {
       setSnarkjsInited(true);

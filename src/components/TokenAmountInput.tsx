@@ -1,27 +1,28 @@
-"use client"
+"use client";
 import { ITokenConf } from "types/tokenTypes";
-import { forwardRef, useRef, useState } from "react";
+import { ChangeEvent, forwardRef, useRef, useState } from "react";
 import { useDebounce } from "react-use";
 import { formatUnits, parseUnits } from "viem";
 import useTokenBalanceOf from "hooks/useTokenBalanceOf";
 
-const TokenAmountInput = forwardRef(
+interface TokenAmountInputProps {
+  editDisabled: boolean;
+  onAmountChange: (_data: { amount: string | number; amountParsed: bigint }) => void;
+  tokenObj: ITokenConf | null;
+  onChange?: (_input: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
   (
     {
       editDisabled = false,
-      onChange,
+      onAmountChange,
       tokenObj,
-    }: {
-      editDisabled: boolean;
-      onChange: (_data: {
-        amount: string | number;
-        amountParsed: bigint;
-      }) => void;
-      tokenObj: ITokenConf | null;
+      onChange,
+      ...rest
     },
     ref: any
   ) => {
-    const amountInputRef = useRef(null);
     const [inputVal, setInputVal] = useState("");
     const [amountParsed, setAmountParsed] = useState(0n);
 
@@ -41,7 +42,7 @@ const TokenAmountInput = forwardRef(
 
           if (!isAmountValid(inputVal) || !decimals) {
             setAmountParsed(0n);
-            onChange({
+            onAmountChange({
               amount: inputVal,
               amountParsed: 0n,
             });
@@ -50,15 +51,15 @@ const TokenAmountInput = forwardRef(
           let tokenAmountParsed = parseUnits(`${inputVal}`, decimals);
 
           setAmountParsed(tokenAmountParsed);
-          onChange({
-            amount: inputVal,
+          onAmountChange({
+            amount: Number(inputVal),
             amountParsed: tokenAmountParsed,
           });
         } catch (error) {
           console.error("Parse tokenAmount error:", error);
           setAmountParsed(0n);
-          onChange({
-            amount: inputVal,
+          onAmountChange({
+            amount: 0,
             amountParsed: 0n,
           });
         }
@@ -72,17 +73,19 @@ const TokenAmountInput = forwardRef(
       : 0;
 
     return (
-      <div ref={ref}>
+      <div >
         <div className="relative mb-2">
           <input
-            ref={amountInputRef}
+            ref={ref}
+            {...rest}
+            className="input input-bordered w-full"
             type="text"
             disabled={editDisabled}
             placeholder="input amount"
             onChange={(e) => {
               setInputVal(e.target.value);
+              if (onChange) onChange(e);
             }}
-            className="input input-bordered w-full"
           />
           {tokenObj ? (
             <div className="absolute right-1 top-[50%] -translate-y-1/2 p-2 cursor-pointer text-slate-500 ">
@@ -93,8 +96,12 @@ const TokenAmountInput = forwardRef(
                   balanceOf && balanceOf > 0n ? "" : "hidden"
                 }`}
                 onClick={() => {
-                  (amountInputRef.current as any).value = maxBalance;
-                  setInputVal(`${maxBalance}`);
+                  (ref.current as any).value = maxBalance;
+                  // setInputVal(`${maxBalance}`);
+                  onAmountChange({
+                    amount: maxBalance,
+                    amountParsed: balanceOf as bigint,
+                  });
                 }}
               >
                 Max

@@ -1,15 +1,16 @@
 "use client";
-import { useState, useEffect, forwardRef } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useState, useEffect, forwardRef, useMemo, useRef } from "react";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import Validate from "utils/validate";
-import { useDebounce } from "react-use";
 import TokenAmountInput from "components/TokenAmountInput";
 import TokenSelector from "components/TokenSelector";
 import { IRewardCreateForm } from "types/rewardTypes";
-import { debounce } from "lodash";
 import AddressListInput from "components/AddressListInput";
+import { ITokenConf } from "types/tokenTypes";
+import { useDebounce } from "react-use";
 
 const defaultValues: IRewardCreateForm = {
+  isValid: false,
   name: "Lucky RedPacket",
   enablePassword: false,
   password: "",
@@ -35,40 +36,84 @@ const RewardCreateForm = forwardRef(
     },
     ref: any
   ) => {
-    const [debounceFormData, setDebounceFormData] = useState(defaultValues);
+    const [enablePassword, setEnablePassword] = useState(false);
+    const [tokenObj, setTokenObj] = useState<ITokenConf | null>(null);
+    const [changeCount, setChangeCount] = useState(0);
 
     const {
       register,
       getValues,
       watch,
       control,
-      formState,
       reset,
       resetField,
       trigger,
       setValue,
       setError,
       clearErrors,
-      formState: { errors, isValid },
+      handleSubmit,
+      unregister,
+      formState: { errors, isValid, isValidating, dirtyFields, touchedFields },
     } = useForm<IRewardCreateForm>({
-      // mode: "onChange",
+      mode: "onChange",
+      criteriaMode: "all",
       disabled: !!editDisabled,
       defaultValues,
     });
 
-    const watchEnablePasswrod = watch("enablePassword");
-    useEffect(() => {
-      if (!watchEnablePasswrod) resetField("password");
-    }, [watchEnablePasswrod, resetField]);
+    const tokenAmountValidate = (
+      value: string | number,
+      formValues: IRewardCreateForm
+    ) => {
+      clearErrors("tokenAmount");
+      const amount = value;
+      if (dirtyFields.tokenAmount) {
+        if (isNaN(amount as number) || !isAmountValid(amount)) {
+          setError("tokenAmount", {
+            type: "custom",
+            message: "Token Amount is invalid.",
+          });
+          return false;
+        } else if (Number(amount) <= 0) {
+          setError("tokenAmount", {
+            type: "custom",
+            message: "TokenAmount should greater than 0",
+          });
+          return false;
+        }
+      }
+      if (formValues.members.length > 0) {
+        if (Number(amount) / formValues.number <= 0.1) {
+          setError("tokenAmount", {
+            type: "custom",
+            message: "At least 0.1 for each user",
+          });
+          return false;
+        }
+      }
+      return true;
+    };
 
-    const handleFormChange = debounce(() => {
-      const data = getValues();
-      setDebounceFormData(data);
-      if (isValid) onChange(data);
-    }, 500);
+    const handleFormChange = async (data: IRewardCreateForm | null) => {
+      if (!data) data = getValues();
+      // const tokenAmountValidation = tokenAmountValidate(data.tokenAmount, data);
+      // console.warn(tokenAmountValidation)
+      // if (tokenAmountValidation) {
+      // }
+      data.isValid = isValid;
+      onChange(data);
+    };
+
+    useDebounce(
+      () => {
+        handleFormChange(null);
+      },
+      500,
+      [changeCount]
+    );
 
     return (
-      <form onChange={handleFormChange}>
+      <form onChange={() => setChangeCount((prev) => prev + 1)}>
         <div className="pb-4" ref={ref}>
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
             <strong>Name</strong>
@@ -80,7 +125,7 @@ const RewardCreateForm = forwardRef(
                 validate: (value, formValues) => {
                   if (!value) {
                     setError("name", {
-                      type: "required",
+                      type: "custom",
                       message: "Name is Empty",
                     });
                     return false;
@@ -104,33 +149,32 @@ const RewardCreateForm = forwardRef(
                   (set claim password)
                 </span>
               </span>
-              <Controller
-                name="enablePassword"
-                control={control}
-                render={({ field, fieldState, formState }) => (
-                  <label className="label cursor-pointer">
-                    <span
-                      className={`label-text pr-2 ${
-                        field.value ? "text-primary" : "text-slate-500"
-                      }`}
-                    >
-                      {field.value ? "using password" : "no password"}
-                    </span>
-                    <input
-                      type="checkbox"
-                      className="toggle toggle-primary"
-                      {...field}
-                      value={field.value ? "checked" : ""}
-                    />
-                  </label>
-                )}
-              />
+              <label className="label cursor-pointer">
+                <span
+                  className={`label-text pr-2 ${
+                    enablePassword ? "text-primary" : "text-slate-500"
+                  }`}
+                >
+                  {enablePassword ? "using password" : "no password"}
+                </span>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-primary"
+                  {...register("enablePassword", {
+                    onChange: (e) => {
+                      setValue("enablePassword", e.target.checked);
+                      setEnablePassword(e.target.checked);
+                    },
+                  })}
+                />
+              </label>
             </div>
             <input
               type="text"
               className="input input-bordered"
               {...register("password", {
-                disabled: editDisabled || !debounceFormData.enablePassword,
+                required: enablePassword,
+                disabled: editDisabled || !enablePassword,
                 maxLength: 40,
                 validate: (value, formValues) => {
                   if (formValues.enablePassword) {
@@ -161,7 +205,7 @@ const RewardCreateForm = forwardRef(
                 {errors.password.message}
               </span>
             )}
-            {debounceFormData.enablePassword && (
+            {enablePassword && (
               <div className="py-4 text-sm">
                 You are creating a ZK (Zero-Knowledge) redpacket! <br />
                 Before claimers can claim, the contract will verify through ZK
@@ -174,7 +218,42 @@ const RewardCreateForm = forwardRef(
           </div>
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
             <strong className="mb-4">Members</strong>
-            <AddressListInput />
+            <Controller
+              name="members"
+              control={control}
+              rules={{
+                required: true,
+                validate: (value, formValues) => {
+                  if (value.length == 0) {
+                    setError("members", {
+                      type: "custom",
+                      message: "No Members",
+                    });
+                    return false;
+                  } else if (formValues.number > value.length) {
+                    setError("number", {
+                      type: "custom",
+                      message: "Number shuold not greater Members",
+                    });
+                  }
+                  clearErrors("members");
+                  return true;
+                },
+                onChange: (_addressList) => {},
+              }}
+              render={({ field, fieldState, formState }) => (
+                <AddressListInput
+                  {...field}
+                  onAddressChange={async (_addressList) => {
+                    setValue("members", _addressList);
+                    field.onChange(_addressList);
+                    await trigger(["members", "tokenAmount"]);
+                    setChangeCount((prev) => prev + 1);
+                  }}
+                />
+              )}
+            />
+
             {errors.members && (
               <span className="mt-2 text-error text-xs font-bold">
                 {errors.members.message}
@@ -182,29 +261,24 @@ const RewardCreateForm = forwardRef(
             )}
           </div>
           <div className="flex items-center justify-between my-3">
-            <strong>Redpacket Mode</strong>
-            <Controller
-              name="mode"
-              control={control}
-              render={({ field, fieldState, formState }) => (
-                <label className="cursor-pointer label">
-                  <span className="label-text text-right mr-2">
-                    {field.value ? "random" : "fixed"}
-                  </span>
-                  <input
-                    type="checkbox"
-                    className="toggle toggle-primary"
-                    defaultChecked
-                    {...register("mode")}
-                  />
-                </label>
-              )}
-            />
+            <strong>Use Random Mode</strong>
+            <label className="cursor-pointer label">
+              <input
+                type="checkbox"
+                className="toggle toggle-primary"
+                defaultChecked={true}
+                {...register("mode", {
+                  required: true,
+                  onChange: (e) => {
+                    setValue("mode", e.target.checked);
+                  },
+                })}
+              />
+            </label>
           </div>
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
             <strong>Red Packet Number</strong>
             <input
-              type="number"
               className="input input-bordered"
               {...register("number", {
                 required: true,
@@ -236,9 +310,17 @@ const RewardCreateForm = forwardRef(
                       return false;
                     }
                   }
+                  // check amount Input
+                  // setValue("isValid", validateAmountInput());
+
+                  clearErrors(["number"]);
                   return true;
                 },
+                onChange(e) {
+                  setValue("number", Number(e.target.value));
+                },
               })}
+              type="text"
             />
             {errors.number && (
               <span className="mt-2 text-error text-xs font-bold">
@@ -251,15 +333,41 @@ const RewardCreateForm = forwardRef(
             <div className=" flex ">
               <input
                 className="outline-none border-none bg-transparent text-xl w-full"
-                type="number"
+                type="text"
                 min={1}
-                {...register("duration")}
+                {...register("duration", {
+                  required: true,
+                  validate: (value, formValues) => {
+                    clearErrors("duration");
+                    if (value <= 0) {
+                      setError("duration", {
+                        type: "custom",
+                        message: "duration should greater than 0",
+                      });
+                      return false;
+                    } else if (parseInt(`${value}`) != value) {
+                      setError("duration", {
+                        type: "custom",
+                        message: "duration must be Integer",
+                      });
+                      return false;
+                    }
+                    return true;
+                  },
+                  onChange(e) {
+                    setValue("duration", Number(e.target.value));
+                  },
+                })}
                 defaultValue={1}
               />
               <select
                 defaultValue={defaultValues.durationUnit}
                 className="select select-bordered"
-                {...register("durationUnit")}
+                {...register("durationUnit", {
+                  onChange(e) {
+                    setValue("durationUnit", Number(e.target.value));
+                  },
+                })}
               >
                 <option key={"day"} value={60 * 60 * 24}>
                   Day
@@ -281,15 +389,19 @@ const RewardCreateForm = forwardRef(
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
             <strong>Token</strong>
             <TokenSelector
+              {...register("tokenObj", {
+                required: true,
+              })}
               editDisabled={editDisabled}
-              onSelect={(_token) => {
+              onSelect={async (_token) => {
                 // @todo set 0 if WETH(ETH)
                 setValue("tokenType", 1);
                 setValue("tokenObj", _token);
-                trigger(["tokenType", "tokenObj"]);
+                setTokenObj(_token);
+                await trigger(["tokenObj", "tokenType"]);
+                setChangeCount((prev) => prev + 1);
               }}
             />
-
             {errors.tokenType && (
               <span className="mt-2 text-error text-xs font-bold">
                 {errors.tokenType.message}
@@ -304,48 +416,19 @@ const RewardCreateForm = forwardRef(
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
             <strong>Token Amount</strong>
             <TokenAmountInput
+              {...register("tokenAmount", {
+                required: true,
+                validate: tokenAmountValidate,
+              })}
               editDisabled={editDisabled}
-              onChange={({ amount, amountParsed }) => {
-                register("tokenAmount", {
-                  validate: (value, formValues) => {
-                    if (formValues.members.length > 0) {
-                      if (!value) {
-                        setError("tokenAmount", {
-                          type: "custom",
-                          message: "Token Amount is empty.",
-                        });
-                        return false;
-                      } else if (!isAmountValid(value)) {
-                        setError("tokenAmount", {
-                          type: "custom",
-                          message: "Token Amount is invalid.",
-                        });
-                        return false;
-                      } else if (Number(value) <= 0) {
-                        setError("tokenAmount", {
-                          type: "custom",
-                          message: "TokenAmount should greater than 0",
-                        });
-                        return false;
-                      } else if (Number(value) / formValues.number <= 0.1) {
-                        setError("tokenAmount", {
-                          type: "custom",
-                          message: "At least 0.1 for each user",
-                        });
-                        return false;
-                      }
-                    }
-                    return true;
-                  },
-                });
-                register("tokenAmountParsed");
+              tokenObj={tokenObj}
+              onAmountChange={async ({ amount, amountParsed }) => {
                 setValue("tokenAmount", amount);
                 setValue("tokenAmountParsed", amountParsed);
-                trigger(["tokenAmount", "tokenAmountParsed"]);
+                await trigger("tokenAmountParsed");
+                // setChangeCount((prev) => prev + 1);
               }}
-              tokenObj={debounceFormData.tokenObj}
             />
-
             {errors.tokenAmount && (
               <span className="mt-2 text-error text-xs font-bold">
                 {errors.tokenAmount.message}

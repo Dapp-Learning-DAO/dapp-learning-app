@@ -1,9 +1,6 @@
 "use client";
 
-import { useQuery } from "@apollo/client";
-import { RedPacketByIdGraph } from "../../../../../../gql/RedpacketGraph";
 import { useEffect, useRef, useState } from "react";
-import { getExpTime, processRedpacketItem } from "hooks/useRedpacketsLists";
 import {
   useAccount,
   useChainId,
@@ -11,16 +8,16 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import ZKTag from "../../redpacket-icons/zktag";
 import RedPacketInfo from "../../rewardComponents/RedpacketInfo";
 import AlertBox, { showAlertMsg } from "components/AlertBox";
-import RewardZksnarkProveInput from "../../zksnark-prove-input";
+import RewardZksnarkProveInput from "../../zksnarkProveInput";
 import useSwitchNetwork from "hooks/useSwitchNetwork";
 import { formatUnits, isAddress, parseEventLogs, toBytes } from "viem";
 import { getMerkleTree, hashToken } from "utils/getMerkleTree";
 import useRedpacketContract from "hooks/useRedpacketContract";
 import useRedpacket from "hooks/useRedpacket";
 import { useRouter } from "next/navigation";
+import RedpacketZkTag from "../../rewardComponents/RedpacketIcons/RedpacketZkTag";
 
 export default function RewardClaimPage({
   params: { id },
@@ -250,7 +247,7 @@ export default function RewardClaimPage({
       >
         <h3 className="font-bold text-xl text-center">
           Claim
-          {isZkRedpacket && <ZKTag />}
+          {isZkRedpacket && <RedpacketZkTag />}
         </h3>
         <div className="overflow-y-auto max-h-[30vh] md:max-h-[50vh] mb-4 py-4 pr-2">
           <div className="py-4 min-h-[40vh] min-w-fit">

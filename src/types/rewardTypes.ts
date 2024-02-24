@@ -10,6 +10,7 @@ export type IRewardClaimer = {
 }
 
 export type IRewardCreateForm = {
+  isValid?: boolean;
   name: string;
   enablePassword: boolean;
   password: string;
