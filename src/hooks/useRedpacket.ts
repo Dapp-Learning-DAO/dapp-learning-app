@@ -2,6 +2,8 @@ import { useQuery } from "@apollo/client";
 import { RedPacketByIdGraph } from "../gql/RedpacketGraph";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
+import localforage from "localforage";
+import Validate from "utils/validate";
 import { getExpTime, processRedpacketItem } from "./useRedpacketsLists";
 
 export default function useRedpacket({ id }: { id: string }) {
@@ -15,9 +17,23 @@ export default function useRedpacket({ id }: { id: string }) {
     context: { clientName: "RedPacket" },
   });
 
-  useEffect(() => {
+  const fetchData = async () => {
     if (!address || !data || !data.redpacket) return;
-    setItem(processRedpacketItem(data.redpacket, address, getExpTime()));
+    let _ipfsData: { [cid: string]: `0x${string}`[] } = {};
+    if (Validate.isCidMsgValid(data.redpacket.message)) {
+      const cid = data.redpacket.message.split("_")[1];
+      if (cid) {
+        const _addrList = await localforage.getItem(cid);
+        if (_addrList) _ipfsData[cid] = _addrList as `0x${string}`[];
+      }
+    }
+    setItem(
+      processRedpacketItem(data.redpacket, address, getExpTime(), _ipfsData)
+    );
+  };
+
+  useEffect(() => {
+    fetchData();
   }, [data, address]);
 
   return {

@@ -16,6 +16,8 @@
     "@rainbow-me/rainbowkit": "^2.0.0",
     "@tanstack/react-query": "^5.22.2",
     "circomlibjs": "^0.1.7",
+    "comlink": "^4.4.1",
+    "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "merkletreejs": "^0.3.11",
     "moment": "^2.30.1",

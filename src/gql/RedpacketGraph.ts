@@ -8,6 +8,7 @@ const REDPACKET_FIELDS = gql`
     creationTime
     expireTimestamp
     lock
+    message
     ifrandom
     total
     number
@@ -31,7 +32,7 @@ const REDPACKET_FIELDS = gql`
 const RedPacketByIdGraph = gql`
   ${REDPACKET_FIELDS}
   query redpacket($redpacketID: ID!) {
-    redpacket(id:$redpacketID) {
+    redpacket(id: $redpacketID) {
       ...RedpacketFields
     }
   }
@@ -44,20 +45,37 @@ const RedPacketsListsGraph = gql`
     $claimerAddress: Bytes!
     $expiredTime: BigInt!
     $creator: Bytes!
+    $creationTime_gt: BigInt!
   ) {
-    Claimable: redpackets(where: { id_in: $claimableIDs }) {
+    Claimable: redpackets(
+      where: { creationTime_gt: $creationTime_gt }
+      orderDirection: desc
+      orderBy: creationTime
+    ) {
       ...RedpacketFields
     }
 
-    Claimed: redpackets(where: { claimers_: { claimer: $claimerAddress } }) {
+    Claimed: redpackets(
+      where: { claimers_: { claimer: $claimerAddress } }
+      orderDirection: desc
+      orderBy: creationTime
+    ) {
       ...RedpacketFields
     }
 
-    Expired: redpackets(where: { expireTimestamp_lte: $expiredTime }) {
+    Expired: redpackets(
+      where: { expireTimestamp_lte: $expiredTime }
+      orderDirection: desc
+      orderBy: creationTime
+    ) {
       ...RedpacketFields
     }
 
-    Created: redpackets(where: { creator: $creator }) {
+    Created: redpackets(
+      where: { creator: $creator }
+      orderDirection: desc
+      orderBy: creationTime
+    ) {
       ...RedpacketFields
     }
   }

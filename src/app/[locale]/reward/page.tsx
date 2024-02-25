@@ -5,6 +5,7 @@ import useRedpacketsLists from "hooks/useRedpacketsLists";
 import Link from "next/link";
 import { useState } from "react";
 import { useDebounce } from "react-use";
+import localforage from "localforage";
 import RedPacketItem from "./rewardComponents/RewardItem";
 import { useRouter } from "next/navigation";
 
@@ -14,10 +15,16 @@ export default function RewardListPage() {
   const router = useRouter();
   const [curTab, setCurTab] = useState(0);
   const [refetchCount, setRefetchCount] = useState(0);
-  const { unclaimList, claimedList, expiredList, createdList, loading } =
-    useRedpacketsLists({ enabled: true, refetchCount });
-    
-  console.warn({ unclaimList, claimedList, expiredList, createdList });
+  const {
+    unclaimList,
+    claimedList,
+    expiredList,
+    createdList,
+    ipfsData,
+    loading,
+  } = useRedpacketsLists({ enabled: true, refetchCount });
+
+  console.warn({ unclaimList, claimedList, expiredList, createdList, ipfsData });
 
   // @todo no need to refetch when click tab
   useDebounce(
@@ -152,3 +159,7 @@ export default function RewardListPage() {
     </div>
   );
 }
+
+export const getJSONfromIndexDB = async (cid: string): Promise<any> => {
+  return localforage.getItem(cid);
+};

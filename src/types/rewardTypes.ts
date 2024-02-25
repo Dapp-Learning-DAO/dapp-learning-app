@@ -4,7 +4,7 @@ export type IRewardClaimer = {
   address: string;
   claimer: string;
   isClaimed: boolean;
-  tokenAddress: string;
+  tokenAddress: string | `0x${string}` | null;
   claimedValue: string | number;
   claimedValueParsed: number | null;
 }
