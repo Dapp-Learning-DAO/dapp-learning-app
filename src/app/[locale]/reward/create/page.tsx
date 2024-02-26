@@ -288,7 +288,7 @@ export default function CreateRedpacketPage() {
             Create Reward Successfully!
           </h3>
           <div className="modal-action w-full gap-4">
-            <Link href="/reward">
+            <Link className="w-full" href="/reward">
               <button className="btn btn-block btn-primary">Confirm</button>
             </Link>
           </div>

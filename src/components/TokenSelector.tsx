@@ -110,7 +110,7 @@ const TokenSelector = forwardRef(
         e.preventDefault();
         if (!customTokenRes) return;
         const res: ITokenConf = {
-          address: searchValue,
+          address: searchValue as `0x${string}`,
           name: customTokenRes?.name,
           symbol: customTokenRes?.symbol,
           decimals: customTokenRes?.decimals,

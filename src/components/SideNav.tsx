@@ -17,7 +17,6 @@ const NAV_LINKS = [
     navs: [
       { name: "Home", link: "/" },
       { name: "Reward", link: "/reward" },
-      { name: "Transaction Builder", link: "/txbuilder" },
     ],
   },
 ];

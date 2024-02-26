@@ -8,32 +8,30 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import RedPacketInfo from "../../rewardComponents/RedpacketInfo";
 import AlertBox, { showAlertMsg } from "components/AlertBox";
-import RewardZksnarkProveInput from "../../zksnarkProveInput";
+import RewardZksnarkProveInput from "app/reward/rewardComponents/zksnarkProveInput";
 import useSwitchNetwork from "hooks/useSwitchNetwork";
 import { formatUnits, isAddress, parseEventLogs, toBytes } from "viem";
 import { getMerkleTree, hashToken } from "utils/getMerkleTree";
 import useRedpacketContract from "hooks/useRedpacketContract";
 import { useRouter } from "next/navigation";
-import RedpacketZkTag from "../../rewardComponents/RedpacketIcons/RedpacketZkTag";
 import { IRewardItem } from "types/rewardTypes";
-import { XCircleIcon } from "@heroicons/react/24/outline";
 
-export default function RewardClaimPage({
+export default function ClaimBtn({
   item,
   onSuccess,
+  setCloseDisabled,
   isModal,
 }: {
   item: IRewardItem;
   onSuccess: () => void;
+  setCloseDisabled: (_disabled: boolean) => void;
   isModal?: boolean | undefined;
 }) {
   const { address } = useAccount();
   const chainId = useChainId();
   const alertBoxRef = useRef(null);
   const zkInputRef = useRef(null);
-  const router = useRouter();
 
   const [root, setRoot] = useState("");
   const [proof, setProof] = useState<string[]>([]);
@@ -87,8 +85,8 @@ export default function RewardClaimPage({
   } = useWriteContract();
 
   useEffect(() => {
-    if (address && item?.addressList && item.addressList.length > 0) {
-      const merkleTree = getMerkleTree(item.addressList);
+    if (address && item?.claimers && item.claimers.length > 0) {
+      const merkleTree = getMerkleTree(item.claimers.map((row) => row.address));
       let _proof = merkleTree.getHexProof(hashToken(address as `0x${string}`));
       let _root = merkleTree.getHexRoot();
 
@@ -109,7 +107,7 @@ export default function RewardClaimPage({
       setProof([]);
       setMerkleVrified(false);
     }
-  }, [address, item?.addressList]);
+  }, [address, item?.claimers]);
 
   useEffect(() => {
     if (simErrorMsg) {
@@ -222,6 +220,10 @@ export default function RewardClaimPage({
     setZkproof(proof);
   };
 
+  useEffect(() => {
+    setCloseDisabled(writeIsLoading || txIsLoading);
+  }, [writeIsLoading, txIsLoading, setCloseDisabled]);
+
   const loading = simWriteLoading || writeIsLoading || txIsLoading;
   const disabled =
     !isNetworkCorrect() ||
@@ -234,56 +236,33 @@ export default function RewardClaimPage({
 
   return (
     <>
-      <div
-        className="relative"
-        style={{ maxHeight: isModal ? "calc(100vh - 3em)" : "auto" }}
-      >
-        <h3 className="font-bold text-xl text-center">
-          Claim
-          {isZkRedpacket && <RedpacketZkTag />}
-        </h3>
-        {isModal && (
+      {isZkRedpacket && (
+        <div className="">
+          <RewardZksnarkProveInput
+            ref={zkInputRef}
+            hashLock={item?.hashLock}
+            onProveSuccess={handleProveChange}
+          />
+        </div>
+      )}
+      <AlertBox ref={alertBoxRef} />
+      <div className="w-full mt-4">
+        {!item?.isExpired && (
           <button
-            className="btn btn-ghost absolute  -top-4 -right-4 hover:bg-transparent disabled:bg-transparent"
-            disabled={writeIsLoading || txIsLoading}
-            onClick={() => router.back()}
+            className="btn btn-primary btn-block md:flex-1 md:mr-4"
+            onClick={(e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleClaim();
+            }}
+            disabled={loading || disabled}
           >
-            <XCircleIcon className="w-6" />
+            {loading && (
+              <div className="loading loading-spinner loading-md inline-block mr-2"></div>
+            )}
+            {loading ? "Loading" : "Claim"}
           </button>
         )}
-        <div className="overflow-y-auto max-h-[30vh] md:max-h-[50vh] mb-4 py-4 pr-2">
-          <div className="py-4 min-h-[40vh] min-w-fit">
-            <RedPacketInfo item={item} isLoading={loading} />
-          </div>
-        </div>
-        {isZkRedpacket && (
-          <div className="">
-            <RewardZksnarkProveInput
-              ref={zkInputRef}
-              hashLock={item?.hashLock}
-              onProveSuccess={handleProveChange}
-            />
-          </div>
-        )}
-        <AlertBox ref={alertBoxRef} />
-        <div className="w-full">
-          {!item?.isExpired && (
-            <button
-              className="btn btn-primary btn-block md:flex-1 md:mr-4"
-              onClick={(e: any) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleClaim();
-              }}
-              disabled={loading || disabled}
-            >
-              {loading && (
-                <div className="loading loading-spinner loading-md inline-block mr-2"></div>
-              )}
-              {loading ? "Loading" : "Claim"}
-            </button>
-          )}
-        </div>
       </div>
     </>
   );

@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import useRedpacket from "hooks/useRedpacket";
-import RewardClaimPage from "./claimPage";
-import ClaimedOrExpiredPage from "./claimedOrExpiredPage";
-import RewardCreatorPage from "./creatorPage";
-import { useSelectedLayoutSegment } from "next/navigation";
+import ClaimBtn from "./claimBtn";
+import RefundBtn from "./refundBtn";
+import RedpacketZkTag from "../../rewardComponents/RedpacketIcons/RedpacketZkTag";
+import { XCircleIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
+import RedPacketInfo from "../../rewardComponents/RedpacketInfo";
 
 export default function RewardDetailPage({
   params: { id, isModal },
@@ -14,30 +16,22 @@ export default function RewardDetailPage({
   params: { id: string; isModal?: boolean | undefined };
 }) {
   const { address } = useAccount();
+  const router = useRouter();
 
   const { data: item, loading: gqlLoading } = useRedpacket({ id });
-  const [showPage, setShowPage] = useState("");
-
-  useEffect(() => {
-    if (address && item) {
-      if (
-        item.isCreator &&
-        address.toLowerCase() == item.creator.toLowerCase()
-      ) {
-        setShowPage("Creator");
-      } else if (item.isClaimed || item.isExpired) {
-        setShowPage("ClaimedOrExpired");
-      } else {
-        setShowPage("Claimable");
-      }
-    }
-  }, [address, item]);
+  const [closeDisabled, setCloseDisabled] = useState(false);
 
   return (
     <>
-      {!showPage || !item ? (
-        <div className="m-auto max-w-xl md:min-w-[60wh]">
-          <p className="mb-2">
+      {!item ? (
+        <div
+          className={`m-auto ${
+            !isModal ? "card border rounded-xl p-16 max-w-xl" : ""
+          }`}
+          style={{ maxHeight: isModal ? "calc(100vh - 3em)" : "auto" }}
+        >
+          <h3 className="h-4 skeleton"></h3>
+          <p className="my-2">
             <span className="skeleton w-8 h-4 mr-2"></span>
             <span className="skeleton w-8 h-4"></span>
           </p>
@@ -59,24 +53,44 @@ export default function RewardDetailPage({
       ) : (
         <div
           className={`m-auto ${
-            !isModal ? "card border rounded-xl p-16 max-w-xl" : ""
+            !isModal ? "card border rounded-xl p-12 max-w-xl" : ""
           }`}
+          style={{ maxHeight: isModal ? "calc(100vh - 3em)" : "auto" }}
         >
-          {showPage === "Creator" && (
-            <RewardCreatorPage
+          <div className="relative">
+            <h3 className="font-bold text-xl text-center">
+              Redpacket Detail
+              {!!item?.hashLock && <RedpacketZkTag />}
+            </h3>
+            {isModal && (
+              <button
+                className="btn btn-ghost absolute -top-4 -right-4 hover:bg-transparent disabled:bg-transparent"
+                disabled={closeDisabled}
+                onClick={() => router.back()}
+              >
+                <XCircleIcon className="w-6" />
+              </button>
+            )}
+            <div className="overflow-y-auto max-h-[30vh] md:max-h-[50vh] mb-4 py-4 pr-2">
+              <div className="py-4 min-h-40vh min-w-fit">
+                {item && <RedPacketInfo item={item} />}
+              </div>
+            </div>
+          </div>
+          {item.isClaimable && (
+            <ClaimBtn
               item={item}
-              isModal={isModal}
               onSuccess={() => {}}
+              setCloseDisabled={setCloseDisabled}
+              isModal={isModal}
             />
           )}
-          {showPage === "ClaimedOrExpired" && (
-            <ClaimedOrExpiredPage item={item} isModal={isModal} />
-          )}
-          {showPage === "Claimable" && (
-            <RewardClaimPage
+          {item.isCreator && (
+            <RefundBtn
               item={item}
-              isModal={isModal}
               onSuccess={() => {}}
+              setCloseDisabled={setCloseDisabled}
+              isModal={isModal}
             />
           )}
         </div>

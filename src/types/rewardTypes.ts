@@ -1,20 +1,19 @@
 import { ITokenConf } from "./tokenTypes";
 
 export type IRewardClaimer = {
-  address: string;
-  claimer: string;
+  address: `0x${string}`;
+  claimer: string | `0x${string}`;
   isClaimed: boolean;
   tokenAddress: string | `0x${string}` | null;
   claimedValue: string | number;
-  claimedValueParsed: number | null;
+  claimedValueParsed: number | null | undefined;
 };
 
 export type IRewardItem = {
   allClaimed: boolean;
   claimedNumber: number;
-  claimedValueParsed: number;
+  claimedValueParsed: number | null | undefined;
   claimers: IRewardClaimer[];
-  addressList?: `0x${string}`[];
   creationTime: string | number;
   creator: `0x${string}`;
   decimals: number;
@@ -27,6 +26,7 @@ export type IRewardItem = {
   isExpired: boolean;
   isRefunded: boolean;
   isCreator: boolean;
+  isClaimable: boolean;
   lock: string;
   message: string;
   name: string;
@@ -35,7 +35,7 @@ export type IRewardItem = {
   symbol: string;
   token: ITokenConf;
   tokenAddress: string;
-  total: string;
+  total: bigint;
   totalParsed: number;
 };
 

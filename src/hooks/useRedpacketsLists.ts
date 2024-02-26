@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "react-use";
 import { formatUnits } from "viem";
 import { ZERO_BYTES32 } from "../constant";
-import { IRewardClaimer } from "types/rewardTypes";
+import { IRewardClaimer, IRewardItem } from "types/rewardTypes";
 import Validate from "utils/validate";
 import * as Comlink from "comlink";
 
@@ -38,7 +38,7 @@ export default function useRedpacketsLists({
     refetch: refetchGql,
   } = useQuery(RedPacketsListsGraph, {
     variables: {
-      claimableIDs: [],
+      // claimableIDs: [],
       claimerAddress: address?.toLowerCase(),
       expiredTime,
       creator: address?.toLowerCase(),
@@ -93,7 +93,9 @@ export default function useRedpacketsLists({
       let _createdList = [];
 
       if (data.Claimable) {
-        _unclaimList = processGqlData(data.Claimable);
+        _unclaimList = processGqlData(data.Claimable).filter(
+          (_row) => _row.isClaimable
+        );
         setUnclaimList(_unclaimList);
       }
       if (data.Claimed) {
@@ -139,7 +141,7 @@ export function processRedpacketItem(
   let tokenAddress: string | null = null;
   let decimals: number | null = null;
   let symbol: string | null = null;
-  let addressList: IRewardClaimer[] = [];
+  let ipfsClaimers: IRewardClaimer[] = [];
 
   if (item.token) {
     tokenAddress = item.token.address;
@@ -151,7 +153,7 @@ export function processRedpacketItem(
     if (Validate.isCidMsgValid(item.message)) {
       const _cid = item.message.split("_")[1];
       if (_ipfsData[_cid]) {
-        addressList = _ipfsData[_cid].map((_addr: `0x${string}`) => ({
+        ipfsClaimers = _ipfsData[_cid].map((_addr: `0x${string}`) => ({
           address: _addr,
           claimer: _addr,
           isClaimed: false,
@@ -164,13 +166,13 @@ export function processRedpacketItem(
   }
 
   let claimedValueParsed = null;
-  // @todo map from addressList
-  let claimers: IRewardClaimer[] = addressList.map((rowItem) => {
+  // @todo map from ipfsClaimers
+  let claimers: IRewardClaimer[] = ipfsClaimers.map((rowItem) => {
     let findRes;
     findRes =
       item.claimers &&
       item.claimers.find(
-        (claimerItem: { id: string; claimer: string; claimedValue: string }) =>
+        (claimerItem: IRewardClaimer) =>
           claimerItem.claimer.toLowerCase() == rowItem.address.toLowerCase()
       );
     if (findRes) {
@@ -179,7 +181,7 @@ export function processRedpacketItem(
         : null;
       debugger;
       return {
-        address: findRes.claimer,
+        address: findRes.claimer as `0x${string}`,
         claimer: findRes.claimer,
         isClaimed: true,
         tokenAddress: tokenAddress,
@@ -203,6 +205,12 @@ export function processRedpacketItem(
   const allClaimed = item?.allClaimed;
   const isRefunded = item?.refunded;
   const isCreator = item?.creator.toLowerCase() == address.toLowerCase();
+  const isClaimable =
+    !isClaimed &&
+    !isExpired &&
+    ipfsClaimers.some(
+      (_row) => _row.address.toLowerCase() === address.toLowerCase()
+    );
   const userClaimedValue = claimers.find(
     (claimerItem: IRewardClaimer) =>
       claimerItem.address.toLowerCase() === address?.toLowerCase()
@@ -218,6 +226,7 @@ export function processRedpacketItem(
     claimedNumber,
     isRefunded,
     isCreator,
+    isClaimable,
     tokenAddress,
     decimals,
     symbol,

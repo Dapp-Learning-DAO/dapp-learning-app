@@ -17,19 +17,21 @@ import {
 import useRedpacketContract from "hooks/useRedpacketContract";
 import useSwitchNetwork from "hooks/useSwitchNetwork";
 import AlertBox, { showAlertMsg } from "components/AlertBox";
-import RedpacketZkTag from "../../rewardComponents/RedpacketIcons/RedpacketZkTag";
-import RedPacketInfo from "../../rewardComponents/RedpacketInfo";
+import RedpacketZkTag from "app/reward/rewardComponents/RedpacketIcons/RedpacketZkTag";
+import RedPacketInfo from "app/reward/rewardComponents/RedpacketInfo";
 import { IRewardItem } from "types/rewardTypes";
 import { useRouter } from "next/navigation";
 import { XCircleIcon } from "@heroicons/react/24/outline";
 
-const RewardCreatorPage = ({
+const RefundBtn = ({
   item,
   onSuccess,
+  setCloseDisabled,
   isModal,
 }: {
   item: IRewardItem;
   onSuccess: () => void;
+  setCloseDisabled: (_disabled: boolean) => void;
   isModal?: boolean | undefined;
 }) => {
   const { address, chain } = useAccount();
@@ -132,7 +134,7 @@ const RewardCreatorPage = ({
       if (item) {
         item.isRefunded = true;
       }
-      if (onSuccess) onSuccess();
+      onSuccess();
     }
   }, [txRes, txIsError, redPacketContract]); // eslint-disable-line
 
@@ -202,6 +204,10 @@ const RewardCreatorPage = ({
     }
   }, []);
 
+  useEffect(() => {
+    setCloseDisabled(writeIsLoading || txIsLoading);
+  }, [writeIsLoading, txIsLoading, setCloseDisabled]);
+
   const loading = simWriteLoading || writeIsLoading || !!txIsLoading;
   const disabled =
     !isNetworkCorrect() ||
@@ -213,25 +219,7 @@ const RewardCreatorPage = ({
     !!refundTx;
 
   return (
-    <div className="relative">
-      <h3 className="font-bold text-xl text-center">
-        Redpacket Detail
-        {!!item?.hashLock && <RedpacketZkTag />}
-      </h3>
-      {isModal && (
-        <button
-          className="btn btn-ghost absolute -top-4 -right-4 hover:bg-transparent disabled:bg-transparent"
-          disabled={writeIsLoading || txIsLoading}
-          onClick={() => router.back()}
-        >
-          <XCircleIcon className="w-6" />
-        </button>
-      )}
-      <div className="overflow-y-auto max-h-[30vh] md:max-h-[50vh] mb-4 py-4 pr-2">
-        <div className="py-4 min-h-40vh min-w-fit">
-          {item && <RedPacketInfo item={item} />}
-        </div>
-      </div>
+    <>
       <AlertBox ref={alertBoxRef} />
       <div className={`mt-4 w-full`}>
         {item?.isExpired && !item?.isRefunded && (
@@ -251,8 +239,8 @@ const RewardCreatorPage = ({
           </button>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
-export default RewardCreatorPage;
+export default RefundBtn;

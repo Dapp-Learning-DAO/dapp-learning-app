@@ -2,7 +2,7 @@ import { SupportedChainId } from "config/chains";
 
 export type ITokenConf = {
   // chainId: number;
-  address: string;
+  address: `0x${string}`;
   symbol: string;
   name: string;
   decimals: number;

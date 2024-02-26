@@ -4,10 +4,9 @@ import AutoSwitchNetwork from "components/AutoSwitchNetwork";
 import useRedpacketsLists from "hooks/useRedpacketsLists";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useDebounce } from "react-use";
 import localforage from "localforage";
-import RedPacketItem from "./rewardComponents/RewardItem";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import RedPacketItem from "./rewardComponents/RewardItem";
 
 const tabList = ["Claimable", "Claimed", "Expired", "Created"];
 
@@ -27,29 +26,10 @@ export default function RewardListPage() {
     loading,
   } = useRedpacketsLists({ enabled: true, refetchCount });
 
-  console.warn({
-    unclaimList,
-    claimedList,
-    expiredList,
-    createdList,
-    ipfsData,
-  });
-
-  // // @todo no need to refetch when click tab
-  // useDebounce(
-  //   () => {
-  //     setRefetchCount((curCount) => curCount + 1);
-  //   },
-  //   500,
-  //   [curTab]
-  // );
-
   useEffect(() => {
     if (searchParams.get("tab")) {
       setCurTab(Number(searchParams.get("tab")));
     }
-    // router.prefetch(`/reward/detail/[id]`);
-    // router.prefetch(`/reward/detail/0x93bc0e5f10353b760a2dbee83ef8fa2eeff607287933eb7e1cfa48a6d408cc49`)
   }, []);
 
   return (
