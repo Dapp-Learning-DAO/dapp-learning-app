@@ -8,10 +8,10 @@ const RewardZksnarkProveInput = forwardRef(
       hashLock,
       onProveSuccess,
     }: {
-      hashLock: string;
+      hashLock: string | null;
       onProveSuccess: (_prove: any) => void;
     },
-    ref: any,
+    ref: any
   ) => {
     const inputRef = useRef(null);
     const [inputVal, setInputVal] = useState("");
@@ -22,7 +22,7 @@ const RewardZksnarkProveInput = forwardRef(
 
     useDebounce(
       async () => {
-        if (inputVal) {
+        if (inputVal && hashLock) {
           setLoading(true);
           const proveRes = await calculateProof(inputVal);
           const _hashLock = await calculatePublicSignals(inputVal);
@@ -44,7 +44,7 @@ const RewardZksnarkProveInput = forwardRef(
         }
       },
       500,
-      [inputVal],
+      [inputVal, hashLock]
     );
 
     const reset = () => {
@@ -85,7 +85,7 @@ const RewardZksnarkProveInput = forwardRef(
         </div>
       </div>
     );
-  },
+  }
 );
 
 RewardZksnarkProveInput.displayName = "RewardZksnarkProveInput";

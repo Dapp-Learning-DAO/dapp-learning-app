@@ -27,9 +27,31 @@ export function Modal({ children }: { children: React.ReactNode }) {
     }
   }, [dialogRef, onDismiss]);
 
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const handleKeyDown = (event: any) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+      }
+    };
+
+    if (dialog) {
+      dialog.addEventListener("keydown", handleKeyDown);
+
+      // Cleanup
+      return () => {
+        dialog.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, []);
+
   return createPortal(
     <div className="modal-backdrop">
-      <dialog ref={dialogRef} className="modal modal-open text-base-content" onClose={onDismiss}>
+      <dialog
+        ref={dialogRef}
+        className="modal modal-open text-base-content"
+        onClose={onDismiss}
+      >
         {children}
       </dialog>
     </div>,

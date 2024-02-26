@@ -38,9 +38,10 @@ export default function useRedpacketsLists({
     refetch: refetchGql,
   } = useQuery(RedPacketsListsGraph, {
     variables: {
-      claimerAddress: address,
+      claimableIDs: [],
+      claimerAddress: address?.toLowerCase(),
       expiredTime,
-      creator: address,
+      creator: address?.toLowerCase(),
       creationTime_gt: 1708793830,
     },
     // pollInterval: 30 * 1000,
@@ -66,7 +67,7 @@ export default function useRedpacketsLists({
         ...RedPacketsGqlData.Claimable,
         ...RedPacketsGqlData.Claimed,
         ...RedPacketsGqlData.Expired,
-        ...RedPacketsGqlData.Expired,
+        ...RedPacketsGqlData.Created,
       ]
         .map((item) => item.message)
         .filter((msg) => Validate.isCidMsgValid(msg))
@@ -201,6 +202,7 @@ export function processRedpacketItem(
   const claimedNumber = item?.claimers.length;
   const allClaimed = item?.allClaimed;
   const isRefunded = item?.refunded;
+  const isCreator = item?.creator.toLowerCase() == address.toLowerCase();
   const userClaimedValue = claimers.find(
     (claimerItem: IRewardClaimer) =>
       claimerItem.address.toLowerCase() === address?.toLowerCase()
@@ -215,6 +217,7 @@ export function processRedpacketItem(
     allClaimed,
     claimedNumber,
     isRefunded,
+    isCreator,
     tokenAddress,
     decimals,
     symbol,

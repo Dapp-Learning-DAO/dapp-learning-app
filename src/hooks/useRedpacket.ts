@@ -5,10 +5,11 @@ import { useAccount } from "wagmi";
 import localforage from "localforage";
 import Validate from "utils/validate";
 import { getExpTime, processRedpacketItem } from "./useRedpacketsLists";
+import { IRewardItem } from "types/rewardTypes";
 
 export default function useRedpacket({ id }: { id: string }) {
   const { address } = useAccount();
-  const [item, setItem] = useState<any | null>(null);
+  const [item, setItem] = useState<IRewardItem | null>(null);
   const { data, loading, refetch } = useQuery(RedPacketByIdGraph, {
     variables: {
       redpacketID: id,

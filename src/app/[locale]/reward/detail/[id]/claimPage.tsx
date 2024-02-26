@@ -15,14 +15,19 @@ import useSwitchNetwork from "hooks/useSwitchNetwork";
 import { formatUnits, isAddress, parseEventLogs, toBytes } from "viem";
 import { getMerkleTree, hashToken } from "utils/getMerkleTree";
 import useRedpacketContract from "hooks/useRedpacketContract";
-import useRedpacket from "hooks/useRedpacket";
 import { useRouter } from "next/navigation";
 import RedpacketZkTag from "../../rewardComponents/RedpacketIcons/RedpacketZkTag";
+import { IRewardItem } from "types/rewardTypes";
+import { XCircleIcon } from "@heroicons/react/24/outline";
 
 export default function RewardClaimPage({
-  params: { id },
+  item,
+  onSuccess,
+  isModal,
 }: {
-  params: { id: string };
+  item: IRewardItem;
+  onSuccess: () => void;
+  isModal?: boolean | undefined;
 }) {
   const { address } = useAccount();
   const chainId = useChainId();
@@ -37,8 +42,6 @@ export default function RewardClaimPage({
 
   const { isNetworkCorrect, switchNetwork } = useSwitchNetwork();
   const redPacketContract = useRedpacketContract();
-
-  const { data: item, loading: gqlLoading } = useRedpacket({ id });
 
   const isZkRedpacket = !!item && !!item?.hashLock;
 
@@ -84,8 +87,8 @@ export default function RewardClaimPage({
   } = useWriteContract();
 
   useEffect(() => {
-    if (address && item?.addressList.length > 0) {
-      const merkleTree = getMerkleTree(item?.addressList);
+    if (address && item?.addressList && item.addressList.length > 0) {
+      const merkleTree = getMerkleTree(item.addressList);
       let _proof = merkleTree.getHexProof(hashToken(address as `0x${string}`));
       let _root = merkleTree.getHexRoot();
 
@@ -128,42 +131,31 @@ export default function RewardClaimPage({
     if (txRes) {
       console.log("onClaimSuccess", txRes);
       if (redPacketContract && txRes.logs && txRes.logs[1]) {
-        const logs = parseEventLogs({
+        const parsedLog = parseEventLogs({
           abi: redPacketContract.abi,
           eventName: ["ClaimSuccess"],
           logs: txRes.logs,
         });
-        debugger;
+        if (parsedLog[0]) {
+          claimed_value_parsed = formatUnits(
+            (parsedLog[0].args as any).claimed_value,
+            item?.decimals
+          );
+          console.log("ClaimSuccess decodedLog", parsedLog);
 
-        // const contractInterface = new Interface(redPacketContract.abi);
-        // const _event = txRes.logs.find(
-        //   (_log) =>
-        //     _log?.topics[0] ==
-        //     keccak256(
-        //       toBytes("ClaimSuccess(bytes32,address,uint256,address,bytes32)")
-        //     )
-        // );
-        // if (_event) {
-        //   // const decodeLog = contractInterface.parseLog(_event);
-        //   claimed_value_parsed = formatUnits(
-        //     _event.args.claimed_value,
-        //     item?.decimals
-        //   );
-        //   console.log("ClaimSuccess decodedLog", decodeLog);
-
-        //   if (item?.claimers) {
-        //     // update claimers
-        //     item.claimers = item?.claimers?.map((c: any) => {
-        //       if (c.address.toLowerCase() == address?.toLowerCase()) {
-        //         return {
-        //           ...c,
-        //           claimedValueParsed: claimed_value_parsed,
-        //         };
-        //       }
-        //       return c;
-        //     });
-        //   }
-        // }
+          if (item?.claimers) {
+            // update claimers
+            item.claimers = item?.claimers?.map((c: any) => {
+              if (c.address.toLowerCase() == address?.toLowerCase()) {
+                return {
+                  ...c,
+                  claimedValueParsed: claimed_value_parsed,
+                };
+              }
+              return c;
+            });
+          }
+        }
       }
       showAlertMsg(
         alertBoxRef,
@@ -173,7 +165,7 @@ export default function RewardClaimPage({
         "success",
         0
       );
-      // if (onSuccess) onSuccess(); @todo
+      if (onSuccess) onSuccess();
     }
   }, [txRes, txIsError, address, redPacketContract]); // eslint-disable-line
 
@@ -230,8 +222,7 @@ export default function RewardClaimPage({
     setZkproof(proof);
   };
 
-  const loading =
-    gqlLoading || simWriteLoading || writeIsLoading || txIsLoading;
+  const loading = simWriteLoading || writeIsLoading || txIsLoading;
   const disabled =
     !isNetworkCorrect() ||
     !claimWriteSimRes ||
@@ -244,13 +235,22 @@ export default function RewardClaimPage({
   return (
     <>
       <div
-        className="modal-box md:min-w-[560px] text-base-content"
-        style={{ maxHeight: `calc(100vh - 3em)` }}
+        className="relative"
+        style={{ maxHeight: isModal ? "calc(100vh - 3em)" : "auto" }}
       >
         <h3 className="font-bold text-xl text-center">
           Claim
           {isZkRedpacket && <RedpacketZkTag />}
         </h3>
+        {isModal && (
+          <button
+            className="btn btn-ghost absolute  -top-4 -right-4 hover:bg-transparent disabled:bg-transparent"
+            disabled={writeIsLoading || txIsLoading}
+            onClick={() => router.back()}
+          >
+            <XCircleIcon className="w-6" />
+          </button>
+        )}
         <div className="overflow-y-auto max-h-[30vh] md:max-h-[50vh] mb-4 py-4 pr-2">
           <div className="py-4 min-h-[40vh] min-w-fit">
             <RedPacketInfo item={item} isLoading={loading} />
@@ -266,37 +266,23 @@ export default function RewardClaimPage({
           </div>
         )}
         <AlertBox ref={alertBoxRef} />
-        <div>
-          <div
-            className={`mt-4 md:modal-action w-full ${
-              !item?.isExpired
-                ? "grid grid-rows-2 gap-4 md:grid-cols-2 "
-                : "flex"
-            }`}
-          >
-            {!item?.isExpired && (
-              <button
-                className="btn btn-primary btn-block md:flex-1 md:mr-4"
-                onClick={(e: any) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleClaim();
-                }}
-                disabled={loading || disabled}
-              >
-                {loading && (
-                  <div className="loading loading-spinner loading-md inline-block mr-2"></div>
-                )}
-                {loading ? "Loading" : "Claim"}
-              </button>
-            )}
+        <div className="w-full">
+          {!item?.isExpired && (
             <button
-              className="btn btn-block md:flex-1"
-              disabled={writeIsLoading || txIsLoading}
+              className="btn btn-primary btn-block md:flex-1 md:mr-4"
+              onClick={(e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleClaim();
+              }}
+              disabled={loading || disabled}
             >
-              Close
+              {loading && (
+                <div className="loading loading-spinner loading-md inline-block mr-2"></div>
+              )}
+              {loading ? "Loading" : "Claim"}
             </button>
-          </div>
+          )}
         </div>
       </div>
     </>

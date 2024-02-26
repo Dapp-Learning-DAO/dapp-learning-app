@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import moment from "moment";
 import RedpacketIcon from "./RedpacketIcons/RedpacketIcon";
@@ -9,16 +9,12 @@ import { numAutoToFixed } from "utils/index";
 
 export default function RedPacketItem({
   item,
-  isCreator,
-  onClick,
 }: {
   item: any;
-  isCreator?: boolean;
-  onClick: () => void;
 }) {
   const ResState = () => {
     // @remind only show in created tab
-    if (isCreator) {
+    if (item.isCreator) {
       let redpacketState = "";
 
       if (item?.allClaimed) {
@@ -39,8 +35,8 @@ export default function RedPacketItem({
                 item?.allClaimed
                   ? "text-green-400 flex opacity-90 items-center bg-white"
                   : !item?.isRefunded
-                    ? "text-yellow-500 flex opacity-90 items-center bg-white"
-                    : "opacity-80 text-gray-800 bg-slate-400"
+                  ? "text-yellow-500 flex opacity-90 items-center bg-white"
+                  : "opacity-80 text-gray-800 bg-slate-400"
               }`}
             >
               {redpacketState}
@@ -83,14 +79,7 @@ export default function RedPacketItem({
 
   return (
     <>
-      <div
-        className="w-full duration-150 transition-all rounded-lg p-3 cursor-pointer hover:scale-105 active:scale-95 flex-col justify-center items-center font-bold relative"
-        onClick={(e: any) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onClick();
-        }}
-      >
+      <div className="w-full duration-150 transition-all rounded-lg p-3 cursor-pointer hover:scale-105 active:scale-95 flex-col justify-center items-center font-bold relative">
         {!!item?.hashLock ? <RedpacketZKIcon /> : <RedpacketIcon />}
         {item?.isClaimed && (
           <SuccessIcon className="absolute top-[46px] left-1/2 -translate-x-[50%] justify-center text-green-400 bg-white rounded-full font-bold w-10 h-10" />
