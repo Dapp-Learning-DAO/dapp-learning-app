@@ -27,18 +27,18 @@ const nextConfig = {
     // for (const [key, value] of Object.entries(path_alias)) {
     //   alias[key.replace("/*", "")] = path.resolve(value[0].replace("/*", ""));
     // }
-    alias["context"] = path.resolve("./src/context");
-    alias["hooks"] = path.resolve("./src/hooks/*");
-    alias["constant"] = path.resolve("./src/constant/*");
-    alias["config"] = path.resolve("./src/config/*");
-    alias["components"] = path.resolve("./src/components/*");
-    alias["utils"] = path.resolve("./src/utils/*");
-    alias["gql"] = path.resolve("./src/gql/*");
-    alias["locales"] = path.resolve("./src/locales/*");
-    alias["provider"] = path.resolve("./src/provider/*");
-    alias["types"] = path.resolve("./src/types/*");
-    alias["src"] = path.resolve("./src/*");
-    alias["app"] = path.resolve("./src/app/[locale]/*");
+    alias["context"] = path.resolve("src/context");
+    alias["hooks"] = path.resolve("src/hooks");
+    alias["constant"] = path.resolve("src/constant");
+    alias["config"] = path.resolve("src/config");
+    alias["components"] = path.resolve("src/components");
+    alias["utils"] = path.resolve("src/utils");
+    alias["gql"] = path.resolve("src/gql");
+    alias["locales"] = path.resolve("src/locales");
+    alias["provider"] = path.resolve("src/provider");
+    alias["types"] = path.resolve("src/types");
+    alias["src"] = path.resolve("src");
+    alias["app"] = path.resolve("src/app/[locale]");
 
     config.resolve.alias = { ...config.resolve.alias, ...alias };
     console.log(config.resolve.alias);
