@@ -2,10 +2,10 @@
 import { useQuery } from "@apollo/client";
 import { RedPacketsListsGraph } from "../gql/RedpacketGraph";
 import { useAccount, useChainId } from "wagmi";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useDebounce } from "react-use";
 import { formatUnits } from "viem";
-import { ZERO_BYTES32 } from "../constant";
+import { ZERO_BYTES32 } from "config/constants";
 import {
   IRewardClaimer,
   IRewardIPFSData,
@@ -14,7 +14,7 @@ import {
 import * as Comlink from "comlink";
 import { useCustomEvent } from "./useCustomEvent.ts";
 import { REWARD_MSG_PRE } from "config/constants.ts";
-import { getCidFromMsg, isCidMsgValid } from "src/app/[locale]/reward/utils.ts";
+import { getCidFromMsg, isCidMsgValid } from "utils/index";
 
 export function getExpTime() {
   return Math.floor(new Date().getTime() / 1000);

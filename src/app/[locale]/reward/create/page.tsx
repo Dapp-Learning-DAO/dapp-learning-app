@@ -12,7 +12,7 @@ import RewardCreateForm from "./RewardCreateForm";
 import AlertBox, { showAlertMsg } from "components/AlertBox";
 import AutoSwitchNetwork from "components/AutoSwitchNetwork";
 import useRedpacketContract from "hooks/useRedpacketContract";
-import { ZERO_BYTES32 } from "constant/index";
+import { ZERO_BYTES32 } from "config/constants";
 import { IRewardCreateForm } from "types/rewardTypes";
 import { pinJSONToIPFS } from "utils/ipfs";
 import { emitCustomEvent } from "hooks/useCustomEvent";

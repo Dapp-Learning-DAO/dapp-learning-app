@@ -23,7 +23,6 @@
     "paths": {
       "context/*": ["./src/context/*"],
       "hooks/*": ["./src/hooks/*"],
-      "constant/*": ["./src/constant/*"],
       "config/*": ["./src/config/*"],
       "components/*": ["./src/components/*"],
       "utils/*": ["./src/utils/*"],

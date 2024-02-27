@@ -30,4 +30,3 @@ export const readJSONfromIPFS = async (cid: string) => {
     `https://${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${cid}`
   ).then((response) => response.json());
 };
-
