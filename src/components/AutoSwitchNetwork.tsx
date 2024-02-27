@@ -25,7 +25,7 @@ export default function AutoSwitchNetwork({
           setShowNetworkTip(false);
         }
       } else {
-        setShowNetworkTip(true);
+        setShowNetworkTip(false);
       }
     },
     1000,

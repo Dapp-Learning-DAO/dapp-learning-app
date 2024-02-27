@@ -9,47 +9,29 @@ import RedpacketZkTag from "../../rewardComponents/RedpacketIcons/RedpacketZkTag
 import { XCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import RedPacketInfo from "../../rewardComponents/RedpacketInfo";
+import RewardDetailLoading from "./loading";
+import { emitCustomEvent } from "hooks/useCustomEvent";
+import { REWARD_LIST_REFRESH_EVENT } from "hooks/useRedpacketsLists";
 
 export default function RewardDetailPage({
   params: { id, isModal },
 }: {
   params: { id: string; isModal?: boolean | undefined };
 }) {
-  const { address } = useAccount();
   const router = useRouter();
 
-  const { data: item, loading: gqlLoading } = useRedpacket({ id });
+  const { data: item, loading: gqlLoading, refetch } = useRedpacket({ id });
   const [closeDisabled, setCloseDisabled] = useState(false);
+
+  // trigger refetch graph data, when user interact with contract
+  const handleTxSuccess = () => {
+    emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 30 * 1000); // refetch during 30s
+  };
 
   return (
     <>
       {!item ? (
-        <div
-          className={`m-auto ${
-            !isModal ? "card border rounded-xl p-16 max-w-xl" : ""
-          }`}
-          style={{ maxHeight: isModal ? "calc(100vh - 3em)" : "auto" }}
-        >
-          <h3 className="h-4 skeleton"></h3>
-          <p className="my-2">
-            <span className="skeleton w-8 h-4 mr-2"></span>
-            <span className="skeleton w-8 h-4"></span>
-          </p>
-          <p className="skeleton h-4 w-full my-4"></p>
-          <p className="skeleton h-4 w-full my-4"></p>
-          <p className="skeleton h-4 w-full my-4"></p>
-          <p className="skeleton h-4 w-full my-4"></p>
-          <p className="skeleton h-4 w-full my-4"></p>
-
-          <div className="text-bas leading-8 py-4">
-            <br />
-            <div className="w-full md:max-h-[30vh]">
-              <div className="skeleton h-4 w-full my-4"></div>
-              <div className="skeleton h-4 w-full my-4"></div>
-              <div className="skeleton h-4 w-full my-4"></div>
-            </div>
-          </div>
-        </div>
+        <RewardDetailLoading isModal={isModal} />
       ) : (
         <div
           className={`m-auto ${
@@ -80,7 +62,7 @@ export default function RewardDetailPage({
           {item.isClaimable && (
             <ClaimBtn
               item={item}
-              onSuccess={() => {}}
+              onSuccess={handleTxSuccess}
               setCloseDisabled={setCloseDisabled}
               isModal={isModal}
             />
@@ -88,7 +70,7 @@ export default function RewardDetailPage({
           {item.isCreator && (
             <RefundBtn
               item={item}
-              onSuccess={() => {}}
+              onSuccess={handleTxSuccess}
               setCloseDisabled={setCloseDisabled}
               isModal={isModal}
             />

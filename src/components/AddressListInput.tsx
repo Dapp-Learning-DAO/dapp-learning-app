@@ -14,7 +14,7 @@ import { isAddress } from "viem";
 // import Papa from 'papaparse';
 
 // mock address List
-// 0x1fae896f3041d7e8Bf5Db08cAd6518b0Eb82164a,0x17670B6512e68574eb5398d5117266F9D45aE637,0x0Eb330289A532a3da281717519b368c145De7fbA
+// 0x1fae896f3041d7e8Bf5Db08cAd6518b0Eb82164a,0x17670B6512e68574eb5398d5117266F9D45aE637,0x0Eb330289A532a3da281717519b368c145De7fbA,0x0B1a5Fe4222b13ff1EbB0551b151d773D8Bae1b0
 
 const AddressListInput = forwardRef(
   (
@@ -27,7 +27,6 @@ const AddressListInput = forwardRef(
       onAddressChange: (_addressList: `0x${string}`[]) => void;
       onChange?: (_addressList: `0x${string}`[]) => void;
       disabled?: boolean | undefined;
-      // onChange?: (_e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     },
     ref: any
   ) => {
@@ -133,10 +132,9 @@ const AddressListInput = forwardRef(
     };
 
     useEffect(() => {
-      const _addressList = Array.from(addresses) as `0x${string}`[];
+      const _addressList = Array.from(addresses).sort() as `0x${string}`[];
       onAddressChange(_addressList);
       if (onChange) onChange(_addressList);
-      
     }, [addresses]); // eslint-disable-line
 
     return (
@@ -266,24 +264,26 @@ const AddressListInput = forwardRef(
             addresses.size === 0 ? "bg-base-200" : ""
           }`}
         >
-          {Array.from(addresses).map((address, index) => (
-            <div
-              key={index}
-              className="badge badge-xl w-full rounded-none py-4 pl-4 pr-10 relative overflow-hidden mb-1"
-            >
-              {address}
+          {Array.from(addresses)
+            .sort()
+            .map((address, index) => (
               <div
-                className="absolute px-1 py-2 right-0 bg-error cursor-pointer"
-                onClick={(e: any) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleRemoveAddress(address);
-                }}
+                key={index}
+                className="badge badge-xl w-full rounded-none py-4 pl-4 pr-10 relative overflow-hidden mb-1"
               >
-                <XCircleIcon className="w-5 text-white" />
+                {address}
+                <div
+                  className="absolute px-1 py-2 right-0 bg-error cursor-pointer"
+                  onClick={(e: any) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemoveAddress(address);
+                  }}
+                >
+                  <XCircleIcon className="w-5 text-white" />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     );

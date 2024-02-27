@@ -14,7 +14,7 @@ export default function useRedpacket({ id }: { id: string }) {
     variables: {
       redpacketID: id,
     },
-    // pollInterval: 30 * 1000,
+    pollInterval: 30 * 1000,
     context: { clientName: "RedPacket" },
   });
 

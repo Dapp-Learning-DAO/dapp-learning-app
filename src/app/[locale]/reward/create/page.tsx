@@ -15,6 +15,8 @@ import useRedpacketContract from "hooks/useRedpacketContract";
 import { ZERO_BYTES32 } from "constant/index";
 import { IRewardCreateForm } from "types/rewardTypes";
 import { pinJSONToIPFS } from "src/utils/IPFS";
+import { emitCustomEvent } from "hooks/useCustomEvent";
+import { REWARD_LIST_REFRESH_EVENT } from "hooks/useRedpacketsLists";
 
 export default function CreateRedpacketPage() {
   const { address, chain } = useAccount();
@@ -112,6 +114,7 @@ export default function CreateRedpacketPage() {
       showAlertMsg(alertBoxRef, "Create Successfully!", "success");
       console.log("CreationSuccess", txRes);
       showCongrats();
+      emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 30 * 1000);
     }
   }, [txRes, txIsError, reset]);
 
@@ -140,7 +143,7 @@ export default function CreateRedpacketPage() {
     if (!formRef.current) return;
     setSubmitClicked(true);
 
-    console.warn("createWriteSimRes", createWriteSimRes);
+    // console.warn("createWriteSimRes", createWriteSimRes);
     if (
       createWriteSimRes &&
       createWriteSimRes?.request &&
@@ -194,6 +197,7 @@ export default function CreateRedpacketPage() {
     )
       return;
     try {
+      console.warn("Create redpacket tx request", createWriteSimRes!.request)
       writeCreateRepacket?.(createWriteSimRes!.request);
     } catch (error) {
       console.error("writeCreateRepacket error", error);

@@ -32,3 +32,15 @@ body {
   z-index: 1000;
 }
 
+.modal-backdrop .modal:not(dialog:not(.modal-open)),
+.modal-backdrop .modal::backdrop {
+  background-color: transparent;
+}
+
+.modal-backdrop .modal-open .modal-box,
+.modal-backdrop .modal-toggle:checked + .modal .modal-box,
+.modal-backdrop .modal:target .modal-box,
+.modal-backdrop .modal[open] .modal-box {
+  box-shadow: none;
+  border-width: 1px;
+}

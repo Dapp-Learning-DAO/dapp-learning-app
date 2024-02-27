@@ -1,36 +1,38 @@
 "use client";
 import { useQuery } from "@apollo/client";
 import { RedPacketsListsGraph } from "../gql/RedpacketGraph";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "react-use";
 import { formatUnits } from "viem";
 import { ZERO_BYTES32 } from "../constant";
-import { IRewardClaimer, IRewardItem } from "types/rewardTypes";
+import {
+  IRewardClaimer,
+  IRewardIPFSData,
+  IRewardItem,
+} from "types/rewardTypes";
 import Validate from "utils/validate";
 import * as Comlink from "comlink";
+import { useCustomEvent } from "./useCustomEvent.ts";
 
 export function getExpTime() {
   return Math.floor(new Date().getTime() / 1000);
 }
 
-export default function useRedpacketsLists({
-  enabled,
-  refetchCount,
-}: {
-  enabled: boolean;
-  refetchCount?: number;
-}) {
+export const REWARD_LIST_REFRESH_EVENT = "REWARD_LIST_REFRESH_EVENT";
+
+export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
   const { address } = useAccount();
+  const chainId = useChainId();
   const [expiredTime, setExpiredTime] = useState(getExpTime());
+  const [refetchCount, setRefetchCount] = useState(0);
   const [unclaimList, setUnclaimList] = useState<any[]>([]);
   const [claimedList, setClaimedList] = useState<any[]>([]);
   const [expiredList, setExpiredList] = useState<any[]>([]);
   const [createdList, setCreatedList] = useState<any[]>([]);
   const [ipfsProgress, setIpfsProgress] = useState<number>(0);
-  const [ipfsData, setIpfsData] = useState<{ [cid: string]: `0x${string}`[] }>(
-    {}
-  );
+  const [ipfsData, setIpfsData] = useState<IRewardIPFSData>({});
+  const [refetchTriggered, setRefetchTriggered] = useState(false);
 
   const {
     data: RedPacketsGqlData,
@@ -44,11 +46,23 @@ export default function useRedpacketsLists({
       creator: address?.toLowerCase(),
       creationTime_gt: 1708793830,
     },
-    // pollInterval: 30 * 1000,
+    pollInterval: (refetchTriggered ? 5 : 30) * 1000,
+    fetchPolicy: refetchTriggered ? "network-only" : "cache-first",
     context: { clientName: "RedPacket" },
     skip: !enabled || !address,
-    // skip: true,
   });
+
+  useCustomEvent({
+    customEventName: REWARD_LIST_REFRESH_EVENT,
+    onChange: (duration: number) => {
+      if (refetchTriggered) return;
+      setRefetchTriggered(true);
+      setTimeout(() => {
+        setRefetchTriggered(false);
+      }, duration);
+    },
+  });
+  console.warn(refetchTriggered);
 
   useDebounce(
     async () => {
@@ -115,10 +129,14 @@ export default function useRedpacketsLists({
     [enabled, RedPacketsGqlData]
   );
 
-  useEffect(() => {
-    if (!refetchGql || !refetchCount || queryGqlLoading) return;
-    refetchGql();
-  }, [queryGqlLoading, refetchCount, refetchGql]);
+  useDebounce(
+    () => {
+      if (!refetchGql || !refetchCount || queryGqlLoading) return;
+      refetchGql();
+    },
+    500,
+    [queryGqlLoading, refetchCount, refetchGql, chainId]
+  );
 
   return {
     unclaimList,
@@ -134,7 +152,7 @@ export function processRedpacketItem(
   item: any,
   address: `0x${string}`,
   _blockts: number,
-  _ipfsData: { [cid: string]: `0x${string}`[] }
+  _ipfsData: IRewardIPFSData
 ) {
   const isExpired = _blockts > Number(item?.expireTimestamp);
 
@@ -179,7 +197,6 @@ export function processRedpacketItem(
       claimedValueParsed = decimals
         ? Number(formatUnits(BigInt(findRes.claimedValue), decimals).toString())
         : null;
-      debugger;
       return {
         address: findRes.claimer as `0x${string}`,
         claimer: findRes.claimer,

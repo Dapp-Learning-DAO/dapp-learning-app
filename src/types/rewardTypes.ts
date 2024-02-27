@@ -56,3 +56,5 @@ export type IRewardCreateForm = {
   number: number;
   tokenObj: null | ITokenConf;
 };
+
+export type IRewardIPFSData = { [cid: string]: `0x${string}`[] };

@@ -4,7 +4,6 @@ import AutoSwitchNetwork from "components/AutoSwitchNetwork";
 import useRedpacketsLists from "hooks/useRedpacketsLists";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import localforage from "localforage";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import RedPacketItem from "./rewardComponents/RewardItem";
 
@@ -16,7 +15,6 @@ export default function RewardListPage() {
   const searchParams = useSearchParams();
 
   const [curTab, setCurTab] = useState(0);
-  const [refetchCount, setRefetchCount] = useState(0);
   const {
     unclaimList,
     claimedList,
@@ -24,7 +22,7 @@ export default function RewardListPage() {
     createdList,
     ipfsData,
     loading,
-  } = useRedpacketsLists({ enabled: true, refetchCount });
+  } = useRedpacketsLists({ enabled: true });
 
   useEffect(() => {
     if (searchParams.get("tab")) {

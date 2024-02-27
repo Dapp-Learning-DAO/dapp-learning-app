@@ -109,24 +109,18 @@ const RewardCreateForm = forwardRef(
     };
 
     // convert password to public signal
-    const passwordWatchData = watch("password");
-    useDebounce(
-      async () => {
-        if (
-          passwordWatchData &&
-          Validate.isValidZKpasswordInput(passwordWatchData)
-        ) {
-          const outputHash = await calculatePublicSignals(
-            passwordWatchData as string
-          );
+    const handlePasswordChange = useCallback(
+      async (inputVal: string) => {
+        if (inputVal && Validate.isValidZKpasswordInput(inputVal)) {
+          const outputHash = await calculatePublicSignals(inputVal as string);
           setValue("lockBytes", outputHash);
         } else {
+          debugger;
           setValue("lockBytes", null);
         }
         setChangeCount((prev) => prev + 1);
       },
-      500,
-      [calculatePublicSignals, setValue, passwordWatchData]
+      [calculatePublicSignals, setValue]
     );
 
     // generate merkle root
@@ -250,6 +244,12 @@ const RewardCreateForm = forwardRef(
                   }
                   clearErrors("password");
                   return true;
+                },
+                onChange: async (e) => {
+                  const _inputVal = e.target.value;
+                  setValue("password", _inputVal);
+                  await trigger("password");
+                  await handlePasswordChange(_inputVal);
                 },
               })}
             />

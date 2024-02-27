@@ -1,16 +1,12 @@
 "use client";
 
 import moment from "moment";
+import { IRewardClaimer, IRewardItem } from "types/rewardTypes";
 import { numAutoToFixed, shortAddress, shortRewardId } from "utils/index";
+import { isAddressEqual } from "viem";
 import { useAccount } from "wagmi";
 
-export default function RedPacketInfo({
-  item,
-  isLoading,
-}: {
-  item: any;
-  isLoading?: boolean;
-}) {
+export default function RedPacketInfo({ item }: { item: IRewardItem }) {
   const { address } = useAccount();
 
   return (
@@ -44,7 +40,9 @@ export default function RedPacketInfo({
         </p>
         <p
           className={`text-base leading-8 ${
-            address == item?.creator ? "font-bold text-primary" : ""
+            address && isAddressEqual(address, item?.creator)
+              ? "font-bold text-primary"
+              : ""
           }`}
         >
           <span className="hidden md:block">Creator: {item?.creator}</span>
@@ -52,11 +50,11 @@ export default function RedPacketInfo({
             Creator: {shortAddress(item?.creator)}
           </span>
         </p>
-        {item?.totalAmount && (
+        {item?.totalParsed && (
           <p className="text-base leading-8">
             Total Amount:
             <span className="font-bold ml-2">
-              {item.totalAmount} {item?.symbol}
+              {item.totalParsed} {item?.symbol}
             </span>
           </p>
         )}
@@ -70,11 +68,7 @@ export default function RedPacketInfo({
           </p>
         </div>
       )} */}
-        {item?.totalParsed && (
-          <p className="text-base leading-8">
-            Total Amount: {item?.totalParsed}
-          </p>
-        )}
+
         {!isNaN(item?.number) && (
           <p className="text-base leading-8">
             Redpacket Number:{" "}
@@ -85,7 +79,7 @@ export default function RedPacketInfo({
         )}
         <p className="text-base leading-8">
           Expire Time:{" "}
-          {moment(item?.expireTimestamp * 1000).format(
+          {moment(Number(item?.expireTimestamp) * 1000).format(
             "YYYY-MM-DD \u00A0 HH:mm"
           )}
         </p>
@@ -93,10 +87,12 @@ export default function RedPacketInfo({
           Claimers: <br />
           <div className="w-full md:max-h-[30vh]">
             {item?.claimers &&
-              item?.claimers.map((row: any) => (
+              item?.claimers.map((row: IRewardClaimer) => (
                 <div
                   className={`flex leading-7 ${
-                    address == row?.address ? "font-bold text-primary" : ""
+                    address && isAddressEqual(address, row?.address)
+                      ? "font-bold text-primary"
+                      : ""
                   }`}
                   key={row?.address}
                 >
@@ -107,7 +103,7 @@ export default function RedPacketInfo({
                     {shortAddress(row?.address)}
                   </div>
                   <div className="font-bold text-base md:text-sm pl-4">
-                    {row.claimedValueParsed > 0
+                    {row.claimedValueParsed && row.claimedValueParsed > 0
                       ? `${numAutoToFixed(row.claimedValueParsed, 4)} ${
                           item?.symbol ? item?.symbol : ""
                         }`
