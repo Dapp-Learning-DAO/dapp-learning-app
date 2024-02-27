@@ -275,7 +275,7 @@ export const runIpfsWorker = async (
   );
 
   const { fetchData } =
-    Comlink.wrap<import("../workers/ipfsFetcher.worker.ts").API>(worker);
+    Comlink.wrap<import("../workers/ipfsfetcher.worker.ts").API>(worker);
 
   // const updateProgress = Comlink.proxy((newProgress: number) => {
   //   setProgress(newProgress);
