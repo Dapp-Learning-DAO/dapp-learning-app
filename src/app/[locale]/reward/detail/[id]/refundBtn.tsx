@@ -167,7 +167,6 @@ const RefundBtn = ({
     } catch (error) {
       showAlertMsg(alertBoxRef, JSON.stringify(error), "error");
       console.error("refund failed error:", JSON.stringify(error));
-      //window.localStorage.setItem(`${address}_${item?.id}`, "")
       writeReset();
       throw error;
     }

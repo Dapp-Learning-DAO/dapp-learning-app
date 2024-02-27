@@ -478,8 +478,8 @@ const RewardCreateForm = forwardRef(
               onAmountChange={async ({ amount, amountParsed }) => {
                 setValue("tokenAmount", amount);
                 setValue("tokenAmountParsed", amountParsed);
-                await trigger("tokenAmountParsed");
-                // setChangeCount((prev) => prev + 1);
+                await trigger(["tokenAmount", "tokenAmountParsed"]);
+                setChangeCount((prev) => prev + 1); // need trigger when click max btn
               }}
             />
             {errors.tokenAmount && (

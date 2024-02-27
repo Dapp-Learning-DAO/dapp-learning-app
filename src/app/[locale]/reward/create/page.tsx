@@ -20,7 +20,7 @@ import { REWARD_LIST_REFRESH_EVENT } from "hooks/useRedpacketsLists";
 import { REWARD_MSG_PRE } from "config/constants";
 
 export default function CreateRedpacketPage() {
-  const { address, chain } = useAccount();
+  const { chain } = useAccount();
   const formRef = useRef(null);
   const alertBoxRef = useRef(null);
   const approveBtnRef = useRef(null);
@@ -112,10 +112,11 @@ export default function CreateRedpacketPage() {
       reset();
     }
     if (txRes) {
+      emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 30 * 1000);
+      sessionStorage.setItem(REWARD_LIST_REFRESH_EVENT, `${30 * 1000}`);
       showAlertMsg(alertBoxRef, "Create Successfully!", "success");
       console.log("CreationSuccess", txRes);
       showCongrats();
-      emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 30 * 1000);
     }
   }, [txRes, txIsError, reset]);
 

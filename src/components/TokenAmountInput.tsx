@@ -1,6 +1,6 @@
 "use client";
 import { ITokenConf } from "types/tokenTypes";
-import { ChangeEvent, forwardRef, useRef, useState } from "react";
+import { ChangeEvent, ElementRef, forwardRef, useRef, useState } from "react";
 import { useDebounce } from "react-use";
 import { formatUnits, parseUnits } from "viem";
 import useTokenBalanceOf from "hooks/useTokenBalanceOf";
@@ -22,6 +22,7 @@ const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
   ) => {
     const [inputVal, setInputVal] = useState("");
     const [amountParsed, setAmountParsed] = useState(0n);
+    const inputRef = useRef<ElementRef<"input">>(null);
 
     const {
       balanceOf,
@@ -71,9 +72,9 @@ const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
 
     return (
       <div>
-        <div className="relative mb-2">
+        <div ref={ref} className="relative mb-2">
           <input
-            ref={ref}
+            ref={inputRef}
             {...rest}
             className="input input-bordered w-full"
             type="text"
@@ -93,7 +94,9 @@ const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
                   balanceOf && balanceOf > 0n ? "" : "hidden"
                 }`}
                 onClick={() => {
-                  if (ref.current) (ref.current as any).value = maxBalance;
+                  if (ref && ref.current) {
+                    (ref.current as any).value = maxBalance;
+                  }
                   setInputVal(`${maxBalance}`);
                   onAmountChange({
                     amount: maxBalance,

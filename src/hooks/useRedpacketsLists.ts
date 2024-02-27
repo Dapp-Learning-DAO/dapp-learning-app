@@ -2,7 +2,7 @@
 import { useQuery } from "@apollo/client";
 import { RedPacketsListsGraph } from "../gql/RedpacketGraph";
 import { useAccount, useChainId } from "wagmi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDebounce } from "react-use";
 import { formatUnits } from "viem";
 import { ZERO_BYTES32 } from "config/constants";
@@ -64,6 +64,17 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
       }, duration);
     },
   });
+
+  useEffect(() => {
+    if (refetchTriggered) return;
+    const otherPageTrigger = sessionStorage.getItem(REWARD_LIST_REFRESH_EVENT);
+    if (!isNaN(Number(otherPageTrigger))) {
+      setRefetchTriggered(true);
+      setTimeout(() => {
+        setRefetchTriggered(false);
+      }, Number(otherPageTrigger));
+    }
+  }, []);
 
   useDebounce(
     async () => {
