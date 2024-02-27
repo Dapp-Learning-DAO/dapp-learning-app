@@ -44,12 +44,6 @@ class Validate {
     const regex = /^[a-zA-Z0-9\s,.!?]+$/;
     return regex.test(input);
   }
-
-  isCidMsgValid(msg: any): boolean {
-    return (
-      typeof msg === "string" && msg !== "null" && /^\d+_[a-z0-9]+$/.test(msg)
-    );
-  }
 }
 
 const validate = new Validate();

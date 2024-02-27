@@ -14,9 +14,10 @@ import AutoSwitchNetwork from "components/AutoSwitchNetwork";
 import useRedpacketContract from "hooks/useRedpacketContract";
 import { ZERO_BYTES32 } from "constant/index";
 import { IRewardCreateForm } from "types/rewardTypes";
-import { pinJSONToIPFS } from "src/utils/IPFS";
+import { pinJSONToIPFS } from "utils/fetchIPFS";
 import { emitCustomEvent } from "hooks/useCustomEvent";
 import { REWARD_LIST_REFRESH_EVENT } from "hooks/useRedpacketsLists";
+import { REWARD_MSG_PRE } from "config/constants";
 
 export default function CreateRedpacketPage() {
   const { address, chain } = useAccount();
@@ -53,7 +54,7 @@ export default function CreateRedpacketPage() {
       formData
         ? formData?.duration * Number(formData?.durationUnit)
         : 24 * 60 * 60,
-      `${ts}_${ipfsCid ? ipfsCid : ""}`,
+      `${REWARD_MSG_PRE}_${ts}_${ipfsCid ? ipfsCid : ""}`,
       formData?.name,
       formData?.tokenType,
       formData?.tokenObj?.address,

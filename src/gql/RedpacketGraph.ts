@@ -46,11 +46,13 @@ const RedPacketsListsGraph = gql`
     $expiredTime: BigInt!
     $creator: Bytes!
     $creationTime_gt: BigInt!
+    $msg_pre: String!
   ) {
     Claimable: redpackets(
       where: {
         creationTime_gt: $creationTime_gt
-        expireTimestamp_gte: $expiredTime
+        # expireTimestamp_gte: $expiredTime
+        message_starts_with: $msg_pre
         # claimers_: { claimer_not: $claimerAddress }
       }
       orderDirection: desc
@@ -62,7 +64,8 @@ const RedPacketsListsGraph = gql`
 
     Claimed: redpackets(
       where: {
-        creationTime_gt: $creationTime_gt
+        # creationTime_gt: $creationTime_gt
+        message_starts_with: $msg_pre
         claimers_: { claimer: $claimerAddress }
       }
       orderDirection: desc
@@ -74,7 +77,8 @@ const RedPacketsListsGraph = gql`
 
     Expired: redpackets(
       where: {
-        creationTime_gt: $creationTime_gt
+        # creationTime_gt: $creationTime_gt
+        message_starts_with: $msg_pre
         expireTimestamp_lte: $expiredTime
       }
       orderDirection: desc
@@ -85,7 +89,11 @@ const RedPacketsListsGraph = gql`
     }
 
     Created: redpackets(
-      where: { creationTime_gt: $creationTime_gt, creator: $creator }
+      where: {
+        message_starts_with: $msg_pre
+        creationTime_gt: $creationTime_gt,
+        creator: $creator
+      }
       orderDirection: desc
       orderBy: creationTime
       first: 1000

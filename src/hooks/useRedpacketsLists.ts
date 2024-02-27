@@ -11,9 +11,10 @@ import {
   IRewardIPFSData,
   IRewardItem,
 } from "types/rewardTypes";
-import Validate from "utils/validate";
 import * as Comlink from "comlink";
 import { useCustomEvent } from "./useCustomEvent.ts";
+import { REWARD_MSG_PRE } from "config/constants.ts";
+import { getCidFromMsg, isCidMsgValid } from "src/app/[locale]/reward/utils.ts";
 
 export function getExpTime() {
   return Math.floor(new Date().getTime() / 1000);
@@ -26,10 +27,10 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
   const chainId = useChainId();
   const [expiredTime, setExpiredTime] = useState(getExpTime());
   const [refetchCount, setRefetchCount] = useState(0);
-  const [unclaimList, setUnclaimList] = useState<any[]>([]);
-  const [claimedList, setClaimedList] = useState<any[]>([]);
-  const [expiredList, setExpiredList] = useState<any[]>([]);
-  const [createdList, setCreatedList] = useState<any[]>([]);
+  const [unclaimList, setUnclaimList] = useState<IRewardItem[]>([]);
+  const [claimedList, setClaimedList] = useState<IRewardItem[]>([]);
+  const [expiredList, setExpiredList] = useState<IRewardItem[]>([]);
+  const [createdList, setCreatedList] = useState<IRewardItem[]>([]);
   const [ipfsProgress, setIpfsProgress] = useState<number>(0);
   const [ipfsData, setIpfsData] = useState<IRewardIPFSData>({});
   const [refetchTriggered, setRefetchTriggered] = useState(false);
@@ -45,6 +46,7 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
       expiredTime,
       creator: address?.toLowerCase(),
       creationTime_gt: 1708793830,
+      msg_pre: REWARD_MSG_PRE,
     },
     pollInterval: (refetchTriggered ? 5 : 30) * 1000,
     fetchPolicy: refetchTriggered ? "network-only" : "cache-first",
@@ -62,7 +64,6 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
       }, duration);
     },
   });
-  console.warn(refetchTriggered);
 
   useDebounce(
     async () => {
@@ -84,8 +85,8 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
         ...RedPacketsGqlData.Created,
       ]
         .map((item) => item.message)
-        .filter((msg) => Validate.isCidMsgValid(msg))
-        .map((msg) => msg.split("_")[1]);
+        .map((msg) => getCidFromMsg(msg))
+        .filter((msg) => !!msg);
       cids = Array.from(new Set(cids));
       if (cids.length > 0) {
         // const updateProgress = Comlink.proxy((newProgress: number) => {
@@ -124,6 +125,12 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
         _createdList = processGqlData(data.Created);
         setCreatedList(_createdList);
       }
+      console.log("useRedpacketLists data", {
+        unclaimList: _unclaimList,
+        claimedList: _claimedList,
+        expiredList: _expiredList,
+        createdList: _createdList,
+      });
     },
     500,
     [enabled, RedPacketsGqlData]
@@ -168,8 +175,8 @@ export function processRedpacketItem(
   }
 
   if (item.message) {
-    if (Validate.isCidMsgValid(item.message)) {
-      const _cid = item.message.split("_")[1];
+    if (isCidMsgValid(item.message)) {
+      const _cid = item.message.split("_")[2];
       if (_ipfsData[_cid]) {
         ipfsClaimers = _ipfsData[_cid].map((_addr: `0x${string}`) => ({
           address: _addr,
