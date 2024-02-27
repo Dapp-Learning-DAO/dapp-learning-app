@@ -27,7 +27,7 @@ const nextConfig = {
     for (const [key, value] of Object.entries(path_alias)) {
       alias[key.replace("/*", "")] = path.resolve(value[0].replace("/*", ""));
     }
-    config.resolve.alias = { ...config.resolve.alias, alias };
+    config.resolve.alias = { ...config.resolve.alias, ...alias };
     console.log(config.resolve.alias)
 
     return config;
