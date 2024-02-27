@@ -74,6 +74,7 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
         setRefetchTriggered(false);
       }, Number(otherPageTrigger));
     }
+    sessionStorage.removeItem(REWARD_LIST_REFRESH_EVENT);
   }, []);
 
   useDebounce(
