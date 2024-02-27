@@ -7,11 +7,7 @@ import CoinIcon from "./RedpacketIcons/CoinIcon";
 import RedpacketZKIcon from "./RedpacketIcons/RedpacketZkIcon";
 import { numAutoToFixed } from "utils/index";
 
-export default function RedPacketItem({
-  item,
-}: {
-  item: any;
-}) {
+export default function RedPacketItem({ item }: { item: any }) {
   const ResState = () => {
     // @remind only show in created tab
     if (item.isCreator) {
@@ -27,8 +23,8 @@ export default function RedPacketItem({
         }
       }
 
-      return (
-        redpacketState && (
+      if (redpacketState)
+        return (
           <div className="absolute flex w-full h-full left-0 top-[90px] rounded-lg justify-center">
             <span
               className={`p-[2px] rounded pl-2 pr-2 h-fit ${
@@ -42,8 +38,7 @@ export default function RedPacketItem({
               {redpacketState}
             </span>
           </div>
-        )
-      );
+        );
     }
 
     return (
