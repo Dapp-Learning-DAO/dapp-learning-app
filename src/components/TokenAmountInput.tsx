@@ -7,20 +7,17 @@ import useTokenBalanceOf from "hooks/useTokenBalanceOf";
 
 interface TokenAmountInputProps {
   editDisabled: boolean;
-  onAmountChange: (_data: { amount: string | number; amountParsed: bigint }) => void;
+  onAmountChange: (_data: {
+    amount: string | number;
+    amountParsed: bigint;
+  }) => void;
   tokenObj: ITokenConf | null;
   onChange?: (_input: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
   (
-    {
-      editDisabled = false,
-      onAmountChange,
-      tokenObj,
-      onChange,
-      ...rest
-    },
+    { editDisabled = false, onAmountChange, tokenObj, onChange, ...rest },
     ref: any
   ) => {
     const [inputVal, setInputVal] = useState("");
@@ -73,7 +70,7 @@ const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
       : 0;
 
     return (
-      <div >
+      <div>
         <div className="relative mb-2">
           <input
             ref={ref}
@@ -96,12 +93,14 @@ const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
                   balanceOf && balanceOf > 0n ? "" : "hidden"
                 }`}
                 onClick={() => {
-                  (ref.current as any).value = maxBalance;
-                  // setInputVal(`${maxBalance}`);
+                  if (ref.current) (ref.current as any).value = maxBalance;
+                  setInputVal(`${maxBalance}`);
                   onAmountChange({
                     amount: maxBalance,
                     amountParsed: balanceOf as bigint,
                   });
+                  if (onChange)
+                    onChange({ target: { value: `${maxBalance}` } } as never);
                 }}
               >
                 Max
