@@ -28,7 +28,6 @@
     "react-hook-form": "^7.50.1",
     "react-use": "^17.5.0",
     "snarkjs": "^0.7.3",
-    "theme-change": "^2.5.0",
     "viem": "~2.7.11",
     "wagmi": "^2.5.7"
   },
