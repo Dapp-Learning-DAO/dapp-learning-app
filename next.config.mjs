@@ -2,6 +2,7 @@
 
 import path from "path";
 
+// tsconfig.json paths
 const path_alias = {
   "context/*": ["./src/context/*"],
   "hooks/*": ["./src/hooks/*"],
@@ -22,11 +23,12 @@ const nextConfig = {
     domains: ["raw.githubusercontent.com", "static.optimism.io"],
   },
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    let alias = {};
     for (const [key, value] of Object.entries(path_alias)) {
-      config.resolve.alias[key.replace("/*", "")] = path.resolve(
-        value[0].replace("/*", "")
-      );
+      alias[key.replace("/*", "")] = path.resolve(value[0].replace("/*", ""));
     }
+    config.resolve.alias = { ...config.resolve.alias, alias };
+    console.log(config.resolve.alias)
 
     return config;
   },
