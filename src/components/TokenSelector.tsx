@@ -5,10 +5,12 @@ import { ITokenConf } from "types/tokenTypes";
 
 import {
   ChangeEvent,
+  ElementRef,
   forwardRef,
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { getTokenIcon } from "utils/getTokenIcon";
@@ -17,6 +19,7 @@ import { erc20Abi, isAddress } from "viem";
 import { useChainId, useReadContracts } from "wagmi";
 import useTokensData from "hooks/useTokensData";
 import { localCustomTokens } from "context/utils";
+import TokenAvatar from "./TokenAvatar";
 
 const TokenSelector = forwardRef(
   (
@@ -24,20 +27,22 @@ const TokenSelector = forwardRef(
       editDisabled,
       onSelect,
       onChange,
+      small,
       ...rest
     }: {
       editDisabled: boolean;
       onSelect: (_t: ITokenConf | null) => void;
       onChange?: (_e: ChangeEvent<HTMLInputElement>) => void;
+      small?: boolean;
     },
     ref: any,
   ) => {
-    const [inited, setInited] = useState(false);
     const [isCustom, setIsCustom] = useState(false);
     const [selectedToken, setSelectedToken] = useState<ITokenConf | null>(null);
     const [searchValue, setSearchValue] = useState("");
 
     const chainId = useChainId();
+    const modalRef = useRef<ElementRef<"dialog">>(null);
     const { tokenOptions } = useTokensData({});
 
     const { data: readRes, isLoading } = useReadContracts({
@@ -79,14 +84,16 @@ const TokenSelector = forwardRef(
     }, [readRes, searchValue]);
 
     const handleTokenSelect = useCallback(
-      (_token: ITokenConf) => {
+      (_token: ITokenConf | null) => {
         if (editDisabled) return;
-        const targetToken = Object.values(tokenOptions).find(
+        const targetToken: ITokenConf | undefined = Object.values(
+          tokenOptions,
+        ).find(
           (token) =>
             token?.address.toLowerCase() === _token?.address.toLowerCase(),
         );
-        setSelectedToken(targetToken as ITokenConf);
-        if (onSelect) onSelect(targetToken as ITokenConf);
+        setSelectedToken(targetToken ? targetToken : null);
+        if (onSelect) onSelect(targetToken ? targetToken : null);
         if (onChange) {
           onChange({
             target: { value: targetToken ? targetToken.address : "" },
@@ -96,9 +103,7 @@ const TokenSelector = forwardRef(
         if (targetToken) {
           setIsCustom(false);
           setSearchValue("");
-          (document as any)
-            .querySelector("#reward_token_selector_modal")
-            .close();
+          if (modalRef.current) modalRef.current.close();
         }
       },
       [tokenOptions, editDisabled, onSelect, onChange],
@@ -143,13 +148,11 @@ const TokenSelector = forwardRef(
     );
 
     useEffect(() => {
-      if (inited) return;
       const opts = Object.values(tokenOptions);
-      if (opts.length > 0 && !selectedToken) {
+      if (opts.length > 0) {
         handleTokenSelect(opts[0]);
-        setInited(true);
       }
-    }, [tokenOptions, inited, handleTokenSelect, selectedToken]);
+    }, [tokenOptions]); // eslint-disable-line
 
     useEffect(() => {
       if (searchValue) {
@@ -166,51 +169,25 @@ const TokenSelector = forwardRef(
       } else {
         setIsCustom(false);
       }
-    }, [searchValue, handleTokenSelect, tokenOptions]);
+    }, [searchValue, tokenOptions]); // eslint-disable-line
 
     return (
       <>
         <div
           ref={ref}
           {...rest}
-          className="flex items-center p-4 rounded-xl border cursor-pointer hover:bg-slate-100"
           onClick={() => {
             if (editDisabled) return;
-            (document as any)
-              .querySelector("#reward_token_selector_modal")
-              .showModal();
+            if (modalRef.current) modalRef.current.showModal();
           }}
         >
-          <div className="pr-4">
-            <Avatar
-              url={getTokenIcon(
-                selectedToken?.address as string,
-                chainId as number,
-              )}
-              address={selectedToken?.address}
-            />
-          </div>
-          {selectedToken ? (
-            <div className="flex-1">
-              <p className="text-slate-800 font-bold">
-                {selectedToken?.name}
-                <span className="ml-4 text-slate-600">
-                  {selectedToken?.symbol}
-                </span>
-              </p>
-              <p className="text-slate-600 hidden md:inline-block text-sm">
-                {selectedToken?.address}
-              </p>
-              <p className="text-slate-600 md:hidden text-sm">
-                {shortAddress(selectedToken?.address as string)}
-              </p>
-            </div>
-          ) : (
-            <div className="flex-1 text-slate-500">select token</div>
-          )}
-          <ChevronDownIcon className="w-6 text-slate-500" />
+          <TokenItem
+            small={small}
+            chainId={chainId}
+            selectedToken={selectedToken}
+          />
         </div>
-        <dialog id="reward_token_selector_modal" className="modal">
+        <dialog ref={modalRef} className="modal">
           <div className="modal-box md:min-w-[540px]">
             <h3 className="font-bold text-xl text-center">Select Token</h3>
             <div className="py-4 min-h-40vh min-w-fit">
@@ -323,10 +300,8 @@ const TokenSelector = forwardRef(
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  (document as any)
-                    .querySelector("#reward_token_selector_modal")
-                    .close();
                   setSearchValue("");
+                  if (modalRef.current) modalRef.current.close();
                 }}
               >
                 Confirm
@@ -342,3 +317,60 @@ const TokenSelector = forwardRef(
 TokenSelector.displayName = "TokenSelector";
 
 export default TokenSelector;
+
+function TokenItem({
+  chainId,
+  selectedToken,
+  small,
+}: {
+  chainId: number;
+  selectedToken: ITokenConf | null;
+  small?: boolean;
+}) {
+  const size = useMemo(() => (small ? 24 : 48), [small]);
+
+  return (
+    <>
+      {small ? (
+        <div className="flex items-center p-1 rounded-full border cursor-pointer max-w-28 hover:bg-slate-100">
+          <TokenAvatar
+            size={size}
+            chainId={chainId}
+            tokenData={selectedToken}
+          />
+          <div className="flex-1 ml-1">
+            <div className="font-bold">{selectedToken?.symbol}</div>
+          </div>
+          <ChevronDownIcon className="w-4 text-base stroke-2" />
+        </div>
+      ) : (
+        <div className="flex items-center p-4 rounded-xl border cursor-pointer hover:bg-slate-100">
+          <TokenAvatar
+            size={size}
+            chainId={chainId}
+            tokenData={selectedToken}
+          />
+          {selectedToken ? (
+            <div className="flex-1 ml-4">
+              <p className="text-slate-800 font-bold">
+                {selectedToken?.name}
+                <span className="ml-4 text-slate-600">
+                  {selectedToken?.symbol}
+                </span>
+              </p>
+              <p className="text-slate-600 hidden md:inline-block text-sm">
+                {selectedToken?.address}
+              </p>
+              <p className="text-slate-600 md:hidden text-sm">
+                {shortAddress(selectedToken?.address as string)}
+              </p>
+            </div>
+          ) : (
+            <div className="flex-1 text-slate-500">select token</div>
+          )}
+          <ChevronDownIcon className="w-6 text-slate-500" />
+        </div>
+      )}
+    </>
+  );
+}

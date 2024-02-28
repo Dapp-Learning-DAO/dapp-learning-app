@@ -1,15 +1,7 @@
 "use client";
-import {
-  useState,
-  useEffect,
-  forwardRef,
-  useMemo,
-  useRef,
-  useCallback,
-} from "react";
+import { useState, useEffect, forwardRef, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Validate from "utils/validate";
-import TokenAmountInput from "components/TokenAmountInput";
 import TokenSelector from "components/TokenSelector";
 import { IRewardCreateForm } from "types/rewardTypes";
 import AddressListInput from "components/AddressListInput";
@@ -19,6 +11,7 @@ import useZKsnark from "hooks/useZKsnark";
 import { keccak256 } from "viem";
 import { MerkleTree } from "merkletreejs";
 import { hashToken } from "utils/getMerkleTree";
+import useTokenAmountInput from "hooks/useTokenAmountInput";
 
 const defaultValues: IRewardCreateForm = {
   isValid: false,
@@ -30,7 +23,7 @@ const defaultValues: IRewardCreateForm = {
   tokenType: 1,
   members: [],
   merkleRoot: null,
-  tokenAmount: 0,
+  tokenAmount: "",
   tokenAmountParsed: 0n,
   duration: 1,
   durationUnit: 1 * 60 * 60 * 24,
@@ -74,6 +67,19 @@ const RewardCreateForm = forwardRef(
       disabled: !!editDisabled,
       defaultValues,
     });
+
+    const { balanceOf, maxBalance, isInsufficient, amountParsed } =
+      useTokenAmountInput({
+        inputVal: getValues("tokenAmount"),
+        tokenObj,
+      });
+
+    useEffect(() => {
+      setValue("tokenAmountParsed", amountParsed);
+      trigger("tokenAmountParsed").then(() => {
+        setChangeCount((prev) => prev + 1); // need trigger when click max btn
+      });
+    }, [amountParsed, setValue, trigger]);
 
     const tokenAmountValidate = (
       value: string | number,
@@ -468,24 +474,60 @@ const RewardCreateForm = forwardRef(
           </div>
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
             <strong>Token Amount</strong>
-            <TokenAmountInput
-              {...register("tokenAmount", {
+            <Controller
+              name="tokenAmount"
+              control={control}
+              rules={{
                 required: true,
                 validate: tokenAmountValidate,
-              })}
-              editDisabled={editDisabled}
-              tokenObj={tokenObj}
-              onAmountChange={async ({ amount, amountParsed }) => {
-                setValue("tokenAmount", amount);
-                setValue("tokenAmountParsed", amountParsed);
-                await trigger(["tokenAmount", "tokenAmountParsed"]);
-                setChangeCount((prev) => prev + 1); // need trigger when click max btn
               }}
+              render={({ field, fieldState, formState }) => (
+                <div className={`relative w-full h-16`}>
+                  <input
+                    {...field}
+                    className="input input-bordered w-full h-full"
+                    type="text"
+                    disabled={editDisabled}
+                    placeholder="input amount"
+                  />
+                  {tokenObj ? (
+                    <div
+                      className="absolute right-2 bottom-4 cursor-pointer text-slate-500"
+                      style={{
+                        lineHeight: "16px",
+                        height: "16px",
+                        fontSize: 12,
+                      }}
+                    >
+                      Balance:
+                      <span className="ml-1">{maxBalance}</span>
+                      <div
+                        className={`btn btn-sm btn-link pl-1 pr-0 ${
+                          balanceOf && balanceOf > 0n ? "" : "hidden"
+                        }`}
+                        onClick={() => {
+                          setValue("tokenAmount", maxBalance);
+                          if ((field.ref as any).current)
+                            (field.ref as any).current.value = maxBalance;
+                          trigger("tokenAmount").then(() => {
+                            setChangeCount((prev) => prev + 1); // need trigger when click max btn
+                          });
+                        }}
+                      >
+                        Max
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             />
             {errors.tokenAmount && (
               <span className="mt-2 text-error text-xs font-bold">
                 {errors.tokenAmount.message}
               </span>
+            )}
+            {isInsufficient && (
+              <div className="text-error font-bold">Insufficient Balance</div>
             )}
           </div>
         </div>

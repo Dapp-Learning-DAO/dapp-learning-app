@@ -1,13 +1,11 @@
 {
-  "name": "dapp-learning-dapp",
+  "name": "dapp-learning-app",
   "version": "0.1.0",
-  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "relay": "relay-compiler",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -38,6 +36,7 @@
     "@types/circomlibjs": "^0.1.6",
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.11.19",
+    "@types/qs": "^6.9.12",
     "@types/react": "^18.2.57",
     "@types/react-dom": "^18.2.19",
     "@types/snarkjs": "^0.7.8",

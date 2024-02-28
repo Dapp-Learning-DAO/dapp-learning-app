@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   useAccount,
+  useChainId,
   useSimulateContract,
   useWaitForTransactionReceipt,
   useWriteContract,
@@ -20,7 +21,8 @@ import { REWARD_LIST_REFRESH_EVENT } from "hooks/useRedpacketsLists";
 import { REWARD_MSG_PRE } from "config/constants";
 
 export default function CreateRedpacketPage() {
-  const { chain } = useAccount();
+  const { isConnected } = useAccount();
+  const chainId = useChainId();
   const formRef = useRef(null);
   const alertBoxRef = useRef(null);
   const approveBtnRef = useRef(null);
@@ -42,7 +44,7 @@ export default function CreateRedpacketPage() {
     isLoading: simWriteLoading,
     refetch: refetchsim,
   } = useSimulateContract({
-    chainId: chain?.id,
+    chainId: chainId,
     address: redPacketContract?.address as `0x${string}`,
     abi: redPacketContract?.abi,
     functionName: "create_red_packet",
@@ -257,27 +259,29 @@ export default function CreateRedpacketPage() {
               }}
             />
             <AlertBox ref={alertBoxRef} />
-            <div className="mb-4 md:grid md:grid-cols-2 md:gap-8 md:p-8">
-              <ApproveBtn
-                ref={approveBtnRef}
-                tokenAddr={selectedTokenAddr as `0x${string}`}
-                exceptedAllowance={exceptedAllowance}
-                onApprovalChange={setIsApproved}
-                onError={() => {
-                  showAlertMsg(alertBoxRef, "Approve faild.", "error");
-                }}
-              />
-
-              <button
-                className="mb-4 btn btn-primary btn-block md:flex-1"
-                disabled={submitClicked || submitDisabled || submitLoading}
-                onClick={handleSubmit}
-              >
-                {(submitClicked || submitLoading) && (
-                  <div className="loading loading-spinner loading-md inline-block mr-2"></div>
-                )}
-                {submitClicked || submitLoading ? "Loading" : "Submit"}
-              </button>
+            <div className="mb-4">
+              {!isConnected || !isApproved ? (
+                <ApproveBtn
+                  ref={approveBtnRef}
+                  tokenAddr={selectedTokenAddr as `0x${string}`}
+                  exceptedAllowance={exceptedAllowance}
+                  onApprovalChange={setIsApproved}
+                  onError={() => {
+                    showAlertMsg(alertBoxRef, "Approve faild.", "error");
+                  }}
+                />
+              ) : (
+                <button
+                  className="mb-4 btn btn-primary btn-block"
+                  disabled={submitClicked || submitDisabled || submitLoading}
+                  onClick={handleSubmit}
+                >
+                  {(submitClicked || submitLoading) && (
+                    <div className="loading loading-spinner loading-md inline-block mr-2"></div>
+                  )}
+                  {submitClicked || submitLoading ? "Loading" : "Submit"}
+                </button>
+              )}
             </div>
           </div>
         </div>

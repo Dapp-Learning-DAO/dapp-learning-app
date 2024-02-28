@@ -2,6 +2,7 @@
 import { forwardRef, useCallback, useEffect, useState } from "react";
 import {
   useAccount,
+  useChainId,
   useReadContract,
   useSimulateContract,
   useWaitForTransactionReceipt,
@@ -10,6 +11,7 @@ import {
 import { erc20Abi, isAddress } from "viem";
 import { useDebounce } from "react-use";
 import useRedpacketContract from "hooks/useRedpacketContract";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const ApproveBtn = forwardRef(
   (
@@ -26,7 +28,8 @@ const ApproveBtn = forwardRef(
     },
     ref: any,
   ) => {
-    const { address, chain } = useAccount();
+    const { address, isConnected } = useAccount();
+    const chainId = useChainId();
     const [isApproved, setIsApproved] = useState(false);
     const [queriedTokenAddr, setQueriedTokenAddr] = useState("");
     const [approveIsLoading, setApproveIsLoading] = useState(false);
@@ -39,7 +42,7 @@ const ApproveBtn = forwardRef(
       refetch: queryAllowance,
       isLoading: isAllowanceLoading,
     } = useReadContract({
-      chainId: chain?.id,
+      chainId: chainId,
       address: tokenAddr,
       abi: erc20Abi,
       functionName: "allowance",
@@ -78,6 +81,10 @@ const ApproveBtn = forwardRef(
             setIsApproved(true);
             if (onApprovalChange) onApprovalChange(true);
             return;
+          } else if (exceptedAllowance == 0n && allowanceRes > 0n) {
+            setIsApproved(true);
+            if (onApprovalChange) onApprovalChange(true);
+            return;
           }
           // console.log("allowanceRes", allowanceRes);
         } catch (error) {
@@ -101,7 +108,7 @@ const ApproveBtn = forwardRef(
       // isError: simIsError,
       // error: simErrorMsg,
     } = useSimulateContract({
-      chainId: chain?.id,
+      chainId: chainId,
       address: tokenAddr,
       abi: erc20Abi,
       functionName: "approve",
@@ -200,21 +207,57 @@ const ApproveBtn = forwardRef(
 
     return (
       <div className="w-full mb-4" ref={ref}>
-        {isApproved ? (
-          <button className="btn btn-block md:flex-1" disabled>
-            Already Approved
-          </button>
+        {isConnected ? (
+          isApproved ? (
+            <button className="btn btn-block" disabled>
+              Already Approved
+            </button>
+          ) : (
+            <button
+              className="btn btn-primary btn-block"
+              disabled={approveDisabled}
+              onClick={handleClick}
+            >
+              {approveIsLoading && (
+                <div className="loading loading-spinner loading-md inline-block mr-2"></div>
+              )}
+              {approveIsLoading ? "Loading" : "Approve"}
+            </button>
+          )
         ) : (
-          <button
-            className="btn btn-primary btn-block md:flex-1"
-            disabled={approveDisabled}
-            onClick={handleClick}
-          >
-            {approveIsLoading && (
-              <div className="loading loading-spinner loading-md inline-block mr-2"></div>
-            )}
-            {approveIsLoading ? "Loading" : "Approve"}
-          </button>
+          <ConnectButton.Custom>
+            {({
+              account,
+              chain,
+              openConnectModal,
+              authenticationStatus,
+              mounted,
+            }) => {
+              // Note: If your app doesn't use authentication, you
+              // can remove all 'authenticationStatus' checks
+              const ready = mounted && authenticationStatus !== "loading";
+              const connected =
+                ready &&
+                account &&
+                chain &&
+                (!authenticationStatus ||
+                  authenticationStatus === "authenticated");
+
+              if (!connected) {
+                return (
+                  <button
+                    className="btn btn-primary btn-block"
+                    onClick={openConnectModal}
+                    type="button"
+                  >
+                    Connect Wallet
+                  </button>
+                );
+              } else {
+                return null;
+              }
+            }}
+          </ConnectButton.Custom>
         )}
       </div>
     );

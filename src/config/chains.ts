@@ -9,7 +9,7 @@ export enum SupportedChainId {
   SEPOLIA = 11155111,
 }
 
-export const CHAIN_IDS_TO_NAMES = {
+export const CHAIN_IDS_TO_NAMES: { [chainId: number]: string } = {
   [SupportedChainId.MAINNET]: "mainnet",
   [SupportedChainId.OPTIMISM]: "optimism",
   [SupportedChainId.ARBITRUM_ONE]: "arbitrum",

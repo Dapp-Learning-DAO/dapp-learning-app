@@ -17,7 +17,7 @@ export default function Avatar({ url, size, address, cid }: AvatarProp) {
   const [isLoading, setIsLoading] = useState(true);
   const [isJazzAvatar, setIsJazzAvatar] = useState(false);
 
-  if (size == null) size = 3;
+  if (size == null) size = 48;
 
   useEffect(() => {
     if (!url && address) {
@@ -42,10 +42,10 @@ export default function Avatar({ url, size, address, cid }: AvatarProp) {
   return (
     <div className="avatar">
       <div
-        className="rounded-full"
+        className="rounded-full relative"
         style={{
-          width: size * 16,
-          height: size * 16,
+          width: size,
+          height: size,
         }}
       >
         {url ? (
@@ -59,18 +59,20 @@ export default function Avatar({ url, size, address, cid }: AvatarProp) {
             alt={`${url || address}`}
           />
         ) : isJazzAvatar && address ? (
-          <JazziconAvatar address={address} diameter={size * 16} />
+          <JazziconAvatar address={address} diameter={size} />
         ) : null}
-        <div
-          className={`skeleton w-full h-full rounded-full ${
-            isLoading ? "" : "hidden"
-          }`}
-        ></div>
-        <div
-          className={`w-full h-full rounded-full bg-slate-200 ${
-            isError ? "" : "hidden"
-          }`}
-        ></div>
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div
+            className={`skeleton w-full h-full rounded-full ${
+              isLoading ? "" : "hidden"
+            }`}
+          ></div>
+          <div
+            className={`w-full h-full rounded-full bg-slate-200 ${
+              isError ? "" : "hidden"
+            }`}
+          ></div>
+        </div>
       </div>
     </div>
   );
