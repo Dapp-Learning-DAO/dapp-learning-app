@@ -1,0 +1,13 @@
+_posts
+lib
+.env
+
+public/zksnark
+
+**/node_modules
+pnpm-lock.yaml
+
+.husky
+.github
+.vercel
+.vscode
