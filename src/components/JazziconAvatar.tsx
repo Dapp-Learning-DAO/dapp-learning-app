@@ -12,10 +12,10 @@ const JazziconAvatar = forwardRef(
       address: `0x${string}` | string;
       diameter?: number;
     },
-    ref: any
+    ref: any,
   ) => {
     const [avatarId] = useState(
-      `wallet_avatar_${Math.floor(Math.random() * 100)}`
+      `wallet_avatar_${Math.floor(Math.random() * 100)}`,
     );
     useEffect(() => {
       // console.warn(ref, address)
@@ -30,7 +30,7 @@ const JazziconAvatar = forwardRef(
     }, [address, diameter, avatarId]);
 
     return <div ref={ref} id={avatarId} className="w-full h-full"></div>;
-  }
+  },
 );
 JazziconAvatar.displayName = "JazziconAvatar";
 

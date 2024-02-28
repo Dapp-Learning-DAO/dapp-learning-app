@@ -31,7 +31,7 @@
       "provider/*": ["./src/provider/*"],
       "types/*": ["./src/types/*"],
       "src/*": ["./src/*"],
-      "app/*": ["./src/app/[locale]/*"],
+      "app/*": ["./src/app/[locale]/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

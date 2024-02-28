@@ -31,8 +31,8 @@ export default function RedPacketItem({ item }: { item: any }) {
                 item?.allClaimed
                   ? "text-green-400 flex opacity-90 items-center bg-white"
                   : !item?.isRefunded
-                  ? "text-yellow-500 flex opacity-90 items-center bg-white"
-                  : "opacity-80 text-gray-800 bg-slate-400"
+                    ? "text-yellow-500 flex opacity-90 items-center bg-white"
+                    : "opacity-80 text-gray-800 bg-slate-400"
               }`}
             >
               {redpacketState}

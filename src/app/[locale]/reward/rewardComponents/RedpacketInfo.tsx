@@ -80,7 +80,7 @@ export default function RedPacketInfo({ item }: { item: IRewardItem }) {
         <p className="text-base leading-8">
           Expire Time:{" "}
           {moment(Number(item?.expireTimestamp) * 1000).format(
-            "YYYY-MM-DD \u00A0 HH:mm"
+            "YYYY-MM-DD \u00A0 HH:mm",
           )}
         </p>
         <div className="text-bas leading-8 py-4">

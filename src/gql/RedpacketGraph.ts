@@ -91,7 +91,7 @@ const RedPacketsListsGraph = gql`
     Created: redpackets(
       where: {
         message_starts_with: $msg_pre
-        creationTime_gt: $creationTime_gt,
+        creationTime_gt: $creationTime_gt
         creator: $creator
       }
       orderDirection: desc

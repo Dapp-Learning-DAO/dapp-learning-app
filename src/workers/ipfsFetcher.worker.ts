@@ -5,7 +5,7 @@ import localforage from "localforage";
 
 export type IfetchData = (
   cids: string[],
-  progressCallback?: ((newProgress: number) => void) & Comlink.ProxyMarked
+  progressCallback?: ((newProgress: number) => void) & Comlink.ProxyMarked,
 ) => Promise<any[]>;
 
 export type API = {
@@ -18,7 +18,7 @@ const fetchData: IfetchData = async (cids, progressCallback) => {
     const cachedResult = await localforage
       .getItem(cids[i])
       .catch((err) =>
-        console.error("ipfsFetcher localforage.getItem error:", err)
+        console.error("ipfsFetcher localforage.getItem error:", err),
       );
     if (cachedResult) {
       results.push(cachedResult);
@@ -34,8 +34,8 @@ const fetchData: IfetchData = async (cids, progressCallback) => {
             "ipfsFetcher localforage.setItem error:",
             cids[i],
             data,
-            err
-          )
+            err,
+          ),
         );
       results.push(data);
     }

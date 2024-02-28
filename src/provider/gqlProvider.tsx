@@ -26,7 +26,7 @@ export const createGQLclient = (_chainId: number) => {
 
   const defaultLink = new HttpLink({
     uri: RedPacketLink,
-  })
+  });
 
   const customLink = new ApolloLink((operation, forward) => {
     const clientName = operation.getContext().clientName;
@@ -45,7 +45,6 @@ export const createGQLclient = (_chainId: number) => {
   });
 };
 
-
 const GqlChainIds = [
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM_ONE,
@@ -55,7 +54,7 @@ const GqlChainIds = [
 const GqlClientMap: { [key: number]: any } = {
   [SupportedChainId.OPTIMISM]: createGQLclient(SupportedChainId.OPTIMISM),
   [SupportedChainId.ARBITRUM_ONE]: createGQLclient(
-    SupportedChainId.ARBITRUM_ONE
+    SupportedChainId.ARBITRUM_ONE,
   ),
   [SupportedChainId.SCROLL]: createGQLclient(SupportedChainId.SCROLL),
   [SupportedChainId.SEPOLIA]: createGQLclient(SupportedChainId.SEPOLIA),
@@ -70,7 +69,7 @@ export default function GqlProvider({
   const lastChainId = useMemo(
     () =>
       chainId && chainId in GqlClientMap ? chainId : SupportedChainId.OPTIMISM,
-    [chainId]
+    [chainId],
   );
   const [gqlClient, setGqlClient] = useState(GqlClientMap[lastChainId]);
 
@@ -83,7 +82,7 @@ export default function GqlProvider({
       }
     },
     1000,
-    [chainId, lastChainId]
+    [chainId, lastChainId],
   );
 
   return <ApolloProvider client={gqlClient}>{children}</ApolloProvider>;

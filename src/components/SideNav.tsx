@@ -53,7 +53,7 @@ const BOTTOM_LINKS = [
   },
 ];
 
-const SideNav = forwardRef((props, ref:any) => {
+const SideNav = forwardRef((props, ref: any) => {
   // const router = useRouter();
   const pathname = usePathname();
   // const searchParams = useSearchParams();
@@ -132,7 +132,6 @@ const SideNav = forwardRef((props, ref:any) => {
   );
 });
 
-SideNav.displayName = "SideNav"
+SideNav.displayName = "SideNav";
 
 export default SideNav;
-

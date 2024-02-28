@@ -14,5 +14,5 @@ export default function useRedpacketContract() {
     setRedpacketContract(loadContract("HappyRedPacket", signer, chainId));
   }, [chainId, signer]);
 
-  return redpacketContract
+  return redpacketContract;
 }

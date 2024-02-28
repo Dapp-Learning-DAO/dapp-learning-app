@@ -118,7 +118,7 @@ const RefundBtn = ({
         if (parsedLog[0]) {
           refund_value_parsed = formatUnits(
             (parsedLog[0].args as any).remaining_balance,
-            item?.decimals
+            item?.decimals,
           );
           console.log("RefundSuccess decodedLog", parsedLog[0]);
         }
@@ -129,7 +129,7 @@ const RefundBtn = ({
           ? `Refunded ${refund_value_parsed} ${item?.symbol}!`
           : `Refund Successfully!`,
         "success",
-        0
+        0,
       );
       if (item) {
         item.isRefunded = true;

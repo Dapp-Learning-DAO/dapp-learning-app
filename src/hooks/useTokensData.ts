@@ -63,7 +63,7 @@ export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
       setTokenDecimals(_decimals);
     },
     200,
-    [chainId, updateCount]
+    [chainId, updateCount],
   );
 
   const {

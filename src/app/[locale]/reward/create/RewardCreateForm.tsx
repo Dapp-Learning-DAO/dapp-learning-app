@@ -47,7 +47,7 @@ const RewardCreateForm = forwardRef(
       editDisabled: boolean;
       onChange: (_v: IRewardCreateForm) => void;
     },
-    ref: any
+    ref: any,
   ) => {
     const [enablePassword, setEnablePassword] = useState(false);
     const [tokenObj, setTokenObj] = useState<ITokenConf | null>(null);
@@ -77,7 +77,7 @@ const RewardCreateForm = forwardRef(
 
     const tokenAmountValidate = (
       value: string | number,
-      formValues: IRewardCreateForm
+      formValues: IRewardCreateForm,
     ) => {
       clearErrors("tokenAmount");
       const amount = value;
@@ -120,7 +120,7 @@ const RewardCreateForm = forwardRef(
         }
         setChangeCount((prev) => prev + 1);
       },
-      [calculatePublicSignals, setValue]
+      [calculatePublicSignals, setValue],
     );
 
     // generate merkle root
@@ -131,7 +131,7 @@ const RewardCreateForm = forwardRef(
           const merkleTree = new MerkleTree(
             membersWatchData?.map((address) => hashToken(address)),
             keccak256,
-            { sortPairs: true }
+            { sortPairs: true },
           );
           const merkleRoot = merkleTree.getHexRoot();
           setValue("merkleRoot", merkleRoot);
@@ -142,7 +142,7 @@ const RewardCreateForm = forwardRef(
         setChangeCount((prev) => prev + 1);
       },
       500,
-      [membersWatchData, setValue]
+      [membersWatchData, setValue],
     );
 
     const handleFormChange = async (data: IRewardCreateForm | null) => {
@@ -156,7 +156,7 @@ const RewardCreateForm = forwardRef(
         handleFormChange(null);
       },
       500,
-      [changeCount]
+      [changeCount],
     );
 
     return (
@@ -491,7 +491,7 @@ const RewardCreateForm = forwardRef(
         </div>
       </form>
     );
-  }
+  },
 );
 
 RewardCreateForm.displayName = "RewardCreateForm";

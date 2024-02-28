@@ -30,7 +30,7 @@ const TokenSelector = forwardRef(
       onSelect: (_t: ITokenConf | null) => void;
       onChange?: (_e: ChangeEvent<HTMLInputElement>) => void;
     },
-    ref: any
+    ref: any,
   ) => {
     const [inited, setInited] = useState(false);
     const [isCustom, setIsCustom] = useState(false);
@@ -83,7 +83,7 @@ const TokenSelector = forwardRef(
         if (editDisabled) return;
         const targetToken = Object.values(tokenOptions).find(
           (token) =>
-            token?.address.toLowerCase() === _token?.address.toLowerCase()
+            token?.address.toLowerCase() === _token?.address.toLowerCase(),
         );
         setSelectedToken(targetToken as ITokenConf);
         if (onSelect) onSelect(targetToken as ITokenConf);
@@ -101,7 +101,7 @@ const TokenSelector = forwardRef(
             .close();
         }
       },
-      [tokenOptions, editDisabled, onSelect, onChange]
+      [tokenOptions, editDisabled, onSelect, onChange],
     );
 
     const handleAddCustomToken = useCallback(
@@ -121,7 +121,7 @@ const TokenSelector = forwardRef(
         }
         setSearchValue("");
       },
-      [chainId, customTokenRes, searchValue]
+      [chainId, customTokenRes, searchValue],
     );
 
     const handleRemoveCustomToken = useCallback(
@@ -139,7 +139,7 @@ const TokenSelector = forwardRef(
         });
         localCustomTokens.removeToken(chainId, _token.symbol);
       },
-      [chainId]
+      [chainId],
     );
 
     useEffect(() => {
@@ -154,7 +154,7 @@ const TokenSelector = forwardRef(
     useEffect(() => {
       if (searchValue) {
         const targetToken = Object.values(tokenOptions).find(
-          (token) => token?.address.toLowerCase() === searchValue.toLowerCase()
+          (token) => token?.address.toLowerCase() === searchValue.toLowerCase(),
         );
         if (targetToken) {
           setIsCustom(false);
@@ -185,7 +185,7 @@ const TokenSelector = forwardRef(
             <Avatar
               url={getTokenIcon(
                 selectedToken?.address as string,
-                chainId as number
+                chainId as number,
               )}
               address={selectedToken?.address}
             />
@@ -248,7 +248,7 @@ const TokenSelector = forwardRef(
                       <Avatar
                         url={getTokenIcon(
                           customTokenRes?.address,
-                          chainId as number
+                          chainId as number,
                         )}
                         address={customTokenRes?.address}
                       />
@@ -336,7 +336,7 @@ const TokenSelector = forwardRef(
         </dialog>
       </>
     );
-  }
+  },
 );
 
 TokenSelector.displayName = "TokenSelector";

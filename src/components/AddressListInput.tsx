@@ -28,7 +28,7 @@ const AddressListInput = forwardRef(
       onChange?: (_addressList: `0x${string}`[]) => void;
       disabled?: boolean | undefined;
     },
-    ref: any
+    ref: any,
   ) => {
     const [addresses, setAddresses] = useState(new Set<string>());
     const [textareaVal, setTextareaVal] = useState("");
@@ -38,7 +38,7 @@ const AddressListInput = forwardRef(
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const handleInputAddAddress = (
-      e: React.KeyboardEvent<HTMLInputElement>
+      e: React.KeyboardEvent<HTMLInputElement>,
     ) => {
       setErrorTxt("");
       let input = e.currentTarget.value.trim();
@@ -66,7 +66,7 @@ const AddressListInput = forwardRef(
         setErrorTxt("");
         setTextareaVal(e.target.value);
       },
-      200
+      200,
     );
 
     const processTextarea = useCallback(() => {
@@ -115,7 +115,7 @@ const AddressListInput = forwardRef(
           if (file.name.endsWith(".json")) {
             const json = JSON.parse(text!);
             const validAddresses = json.filter((addr: string) =>
-              isAddress(addr)
+              isAddress(addr),
             );
             setAddresses(validAddresses);
           } else if (file.name.endsWith(".csv")) {
@@ -287,7 +287,7 @@ const AddressListInput = forwardRef(
         </div>
       </div>
     );
-  }
+  },
 );
 AddressListInput.displayName = "AddressListInput";
 

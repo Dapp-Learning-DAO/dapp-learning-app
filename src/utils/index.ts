@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { isAddress } from "viem";
 
 export function shortAddress(str: string): string {

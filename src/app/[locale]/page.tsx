@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useI18n, useScopedI18n } from "locales/client";
 
 // `app/page.tsx` is the UI for the `/` URL

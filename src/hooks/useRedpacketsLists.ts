@@ -110,7 +110,7 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
 
       const processGqlData = (arr: any[]) => {
         return arr.map((item: any) =>
-          processRedpacketItem(item, address, _blockts, _ipfsData)
+          processRedpacketItem(item, address, _blockts, _ipfsData),
         );
       };
 
@@ -121,7 +121,7 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
 
       if (data.Claimable) {
         _unclaimList = processGqlData(data.Claimable).filter(
-          (_row) => _row.isClaimable
+          (_row) => _row.isClaimable,
         );
         setUnclaimList(_unclaimList);
       }
@@ -145,7 +145,7 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
       });
     },
     500,
-    [enabled, RedPacketsGqlData]
+    [enabled, RedPacketsGqlData],
   );
 
   useDebounce(
@@ -154,7 +154,7 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
       refetchGql();
     },
     500,
-    [queryGqlLoading, refetchCount, refetchGql, chainId]
+    [queryGqlLoading, refetchCount, refetchGql, chainId],
   );
 
   return {
@@ -171,7 +171,7 @@ export function processRedpacketItem(
   item: any,
   address: `0x${string}`,
   _blockts: number,
-  _ipfsData: IRewardIPFSData
+  _ipfsData: IRewardIPFSData,
 ) {
   const isExpired = _blockts > Number(item?.expireTimestamp);
 
@@ -210,7 +210,7 @@ export function processRedpacketItem(
       item.claimers &&
       item.claimers.find(
         (claimerItem: IRewardClaimer) =>
-          claimerItem.claimer.toLowerCase() == rowItem.address.toLowerCase()
+          claimerItem.claimer.toLowerCase() == rowItem.address.toLowerCase(),
       );
     if (findRes) {
       claimedValueParsed = decimals
@@ -232,7 +232,7 @@ export function processRedpacketItem(
   const isClaimed = claimers.some(
     (claimerItem: IRewardClaimer) =>
       claimerItem.address.toLowerCase() == address?.toLowerCase() &&
-      claimerItem.isClaimed
+      claimerItem.isClaimed,
   );
   const hashLock =
     item?.lock && item?.lock !== ZERO_BYTES32 ? item?.lock : null;
@@ -245,11 +245,11 @@ export function processRedpacketItem(
     !isClaimed &&
     !isExpired &&
     ipfsClaimers.some(
-      (_row) => _row.address.toLowerCase() === address.toLowerCase()
+      (_row) => _row.address.toLowerCase() === address.toLowerCase(),
     );
   const userClaimedValue = claimers.find(
     (claimerItem: IRewardClaimer) =>
-      claimerItem.address.toLowerCase() === address?.toLowerCase()
+      claimerItem.address.toLowerCase() === address?.toLowerCase(),
   )?.claimedValueParsed;
 
   return {
@@ -279,11 +279,11 @@ export function processRedpacketItem(
 
 export const runIpfsWorker = async (
   cids: string[],
-  updateProgress?: ((newProgress: number) => void) & Comlink.ProxyMarked
+  updateProgress?: ((newProgress: number) => void) & Comlink.ProxyMarked,
 ) => {
   const worker = new Worker(
     new URL("../workers/ipfsFetcher.worker.ts", import.meta.url),
-    { type: "module" }
+    { type: "module" },
   );
 
   const { fetchData } =

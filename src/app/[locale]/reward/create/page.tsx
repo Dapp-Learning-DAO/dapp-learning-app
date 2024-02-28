@@ -192,14 +192,9 @@ export default function CreateRedpacketPage() {
   // after click submit, and ipfs data uploaded,
   // will resim the contract write func
   useEffect(() => {
-    if (
-      !submitClicked ||
-      !ipfsCid ||
-      !simIsSuccess
-    )
-      return;
+    if (!submitClicked || !ipfsCid || !simIsSuccess) return;
     try {
-      console.warn("Create redpacket tx request", createWriteSimRes!.request)
+      console.warn("Create redpacket tx request", createWriteSimRes!.request);
       writeCreateRepacket?.(createWriteSimRes!.request);
     } catch (error) {
       console.error("writeCreateRepacket error", error);
@@ -226,7 +221,7 @@ export default function CreateRedpacketPage() {
 
   useEffect(() => {
     const dialog = (document as any).querySelector(
-      "#redpacket_create_success_modal"
+      "#redpacket_create_success_modal",
     );
     const handleKeyDown = (event: any) => {
       if (event.key === "Escape") {

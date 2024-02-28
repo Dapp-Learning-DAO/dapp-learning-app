@@ -30,7 +30,6 @@ export default function RewardListPage() {
     }
   }, []);
 
-
   return (
     <div>
       <AutoSwitchNetwork forceSwitch={false} />
@@ -55,7 +54,7 @@ export default function RewardListPage() {
                       .toString()
                       .replace(
                         `tab=${searchParams.get("tab")}`,
-                        `tab=${index}`
+                        `tab=${index}`,
                       )}`;
                   } else {
                     url = `${pathname}?${searchParams}&tab=${index}`;
@@ -152,4 +151,3 @@ export default function RewardListPage() {
     </div>
   );
 }
-

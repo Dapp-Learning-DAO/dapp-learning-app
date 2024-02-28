@@ -27,7 +27,7 @@ export default function useRedpacket({ id }: { id: string }) {
       if (_addrList) _ipfsData[cid] = _addrList as `0x${string}`[];
     }
     setItem(
-      processRedpacketItem(data.redpacket, address, getExpTime(), _ipfsData)
+      processRedpacketItem(data.redpacket, address, getExpTime(), _ipfsData),
     );
   };
 

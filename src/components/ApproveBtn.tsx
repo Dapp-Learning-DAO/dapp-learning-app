@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { forwardRef, useCallback, useEffect, useState } from "react";
 import {
   useAccount,

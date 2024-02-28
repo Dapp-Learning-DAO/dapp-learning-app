@@ -137,7 +137,7 @@ export default function ClaimBtn({
         if (parsedLog[0]) {
           claimed_value_parsed = formatUnits(
             (parsedLog[0].args as any).claimed_value,
-            item?.decimals
+            item?.decimals,
           );
           console.log("ClaimSuccess decodedLog", parsedLog);
 
@@ -161,7 +161,7 @@ export default function ClaimBtn({
           ? `Claimed ${claimed_value_parsed} ${item?.symbol ?? ""}!`
           : `Claim Successfully!`,
         "success",
-        0
+        0,
       );
       if (onSuccess) onSuccess();
     }

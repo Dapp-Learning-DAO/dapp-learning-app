@@ -9,7 +9,7 @@ export default function useZKsnark() {
     const proveRes = await groth16.fullProve(
       { in: keccak256(toHex(input)) },
       `/zksnark/datahash.wasm`,
-      `/zksnark/circuit_final.zkey`
+      `/zksnark/circuit_final.zkey`,
     );
     console.log("calculateProof proveRes", proveRes);
     console.log(Vkey);
@@ -17,7 +17,7 @@ export default function useZKsnark() {
     const res = await groth16.verify(
       Vkey,
       proveRes.publicSignals,
-      proveRes.proof
+      proveRes.proof,
     );
 
     if (res) {
@@ -27,8 +27,8 @@ export default function useZKsnark() {
       const proof = convertCallData(
         await groth16.exportSolidityCallData(
           proveRes.proof,
-          proveRes.publicSignals
-        )
+          proveRes.publicSignals,
+        ),
       );
 
       return {

@@ -18,7 +18,7 @@ interface TokenAmountInputProps {
 const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
   (
     { editDisabled = false, onAmountChange, tokenObj, onChange, ...rest },
-    ref: any
+    ref: any,
   ) => {
     const [inputVal, setInputVal] = useState("");
     const [amountParsed, setAmountParsed] = useState(0n);
@@ -63,7 +63,7 @@ const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
         }
       },
       300,
-      [inputVal]
+      [inputVal],
     );
 
     const maxBalance = balanceOf
@@ -116,7 +116,7 @@ const TokenAmountInput = forwardRef<HTMLDivElement, TokenAmountInputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 TokenAmountInput.displayName = "TokenAmountInput";

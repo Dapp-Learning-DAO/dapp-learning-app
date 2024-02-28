@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export default function useIPFSwebworker({ cids }: { cids: string[] }) {
   const [progress, setProgress] = useState<number>(0);
   const [fetching, setFetching] = useState(false);
-  const [data, setData] = useState<{[key: string]: `0x${string}`[]}>({});
+  const [data, setData] = useState<{ [key: string]: `0x${string}`[] }>({});
 
   useEffect(() => {
     if (cids.length === 0) return;
@@ -13,7 +13,7 @@ export default function useIPFSwebworker({ cids }: { cids: string[] }) {
       setFetching(true);
       const worker = new Worker(
         new URL("../workers/ipfsFetcher.worker.ts", import.meta.url),
-        { type: "module" }
+        { type: "module" },
       );
 
       const { fetchData } =
@@ -24,7 +24,7 @@ export default function useIPFSwebworker({ cids }: { cids: string[] }) {
       });
 
       const results = await fetchData(cids, updateProgress);
-      let _data: {[key: string]: `0x${string}`[]} = {};
+      let _data: { [key: string]: `0x${string}`[] } = {};
       for (let i = 0; i < cids.length; i++) {
         _data[cids[i]] = results[i];
       }
