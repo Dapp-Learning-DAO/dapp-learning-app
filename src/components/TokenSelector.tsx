@@ -5,7 +5,9 @@ import { ITokenConf } from "types/tokenTypes";
 
 import {
   ChangeEvent,
+  Dispatch,
   ElementRef,
+  SetStateAction,
   forwardRef,
   useCallback,
   useEffect,
@@ -20,25 +22,29 @@ import { useChainId, useReadContracts } from "wagmi";
 import useTokensData from "hooks/useTokensData";
 import { localCustomTokens } from "context/utils";
 import TokenAvatar from "./TokenAvatar";
+import { Token } from "config/tokens";
+import { useDebounce } from "react-use";
 
 const TokenSelector = forwardRef(
   (
     {
-      editDisabled,
-      onSelect,
-      onChange,
+      curToken,
+      setCurToken,
+      disabled,
       small,
+      autoSelect = true,
       ...rest
     }: {
-      editDisabled: boolean;
-      onSelect: (_t: ITokenConf | null) => void;
-      onChange?: (_e: ChangeEvent<HTMLInputElement>) => void;
+      curToken: Token | undefined;
+      setCurToken: Dispatch<SetStateAction<Token | undefined>>;
+      disabled: boolean;
       small?: boolean;
+      autoSelect?: boolean | undefined;
     },
     ref: any,
   ) => {
     const [isCustom, setIsCustom] = useState(false);
-    const [selectedToken, setSelectedToken] = useState<ITokenConf | null>(null);
+    // const [curToken, setCurToken] = useState<Token | null>(null);
     const [searchValue, setSearchValue] = useState("");
 
     const chainId = useChainId();
@@ -66,7 +72,7 @@ const TokenSelector = forwardRef(
       ],
       query: {
         enabled:
-          isCustom && !!searchValue && isAddress(searchValue) && !editDisabled,
+          isCustom && !!searchValue && isAddress(searchValue) && !disabled,
       },
     });
 
@@ -84,21 +90,17 @@ const TokenSelector = forwardRef(
     }, [readRes, searchValue]);
 
     const handleTokenSelect = useCallback(
-      (_token: ITokenConf | null) => {
-        if (editDisabled) return;
-        const targetToken: ITokenConf | undefined = Object.values(
-          tokenOptions,
-        ).find(
-          (token) =>
-            token?.address.toLowerCase() === _token?.address.toLowerCase(),
-        );
-        setSelectedToken(targetToken ? targetToken : null);
-        if (onSelect) onSelect(targetToken ? targetToken : null);
-        if (onChange) {
-          onChange({
-            target: { value: targetToken ? targetToken.address : "" },
-          } as ChangeEvent<HTMLInputElement>);
-        }
+      (_token: Token | undefined) => {
+        if (disabled) return;
+        const targetToken =
+          _token && _token?.symbol ? tokenOptions[_token.symbol] : undefined;
+        setCurToken(targetToken);
+        // if (onSelect) onSelect(targetToken ? targetToken : null);
+        // if (onChange) {
+        //   onChange({
+        //     target: { value: targetToken ? targetToken.address : "" },
+        //   } as ChangeEvent<HTMLInputElement>);
+        // }
         console.log("handleTokenSelect value", targetToken);
         if (targetToken) {
           setIsCustom(false);
@@ -106,7 +108,7 @@ const TokenSelector = forwardRef(
           if (modalRef.current) modalRef.current.close();
         }
       },
-      [tokenOptions, editDisabled, onSelect, onChange],
+      [tokenOptions, disabled],
     );
 
     const handleAddCustomToken = useCallback(
@@ -114,13 +116,14 @@ const TokenSelector = forwardRef(
         e.stopPropagation();
         e.preventDefault();
         if (!customTokenRes) return;
-        const res: ITokenConf = {
+        const res = new Token({
+          chainId: chainId,
           address: searchValue as `0x${string}`,
           name: customTokenRes?.name,
           symbol: customTokenRes?.symbol,
           decimals: customTokenRes?.decimals,
           isUserCustom: true,
-        };
+        });
         if (!localCustomTokens.hasTokenByAddress(chainId, searchValue)) {
           localCustomTokens.addToken(chainId, res);
         }
@@ -133,12 +136,12 @@ const TokenSelector = forwardRef(
       (e: any, _token: ITokenConf) => {
         e.stopPropagation();
         e.preventDefault();
-        setSelectedToken((curState) => {
+        setCurToken((curState) => {
           if (
             curState &&
             _token.address.toLowerCase() === curState?.address.toLowerCase()
           ) {
-            return null;
+            return undefined;
           }
           return curState;
         });
@@ -147,29 +150,44 @@ const TokenSelector = forwardRef(
       [chainId],
     );
 
-    useEffect(() => {
-      const opts = Object.values(tokenOptions);
-      if (opts.length > 0) {
-        handleTokenSelect(opts[0]);
-      }
-    }, [tokenOptions]); // eslint-disable-line
-
-    useEffect(() => {
-      if (searchValue) {
-        const targetToken = Object.values(tokenOptions).find(
-          (token) => token?.address.toLowerCase() === searchValue.toLowerCase(),
-        );
-        if (targetToken) {
-          setIsCustom(false);
-          setSearchValue("");
-          handleTokenSelect(targetToken);
-        } else if (isAddress(searchValue)) {
-          setIsCustom(true);
+    useDebounce(
+      () => {
+        if (!autoSelect || searchValue) return;
+        if (
+          curToken &&
+          tokenOptions[curToken.symbol] &&
+          curToken.equals(tokenOptions[curToken.symbol])
+        ) {
+          return;
         }
-      } else {
-        setIsCustom(false);
-      }
-    }, [searchValue, tokenOptions]); // eslint-disable-line
+        const opts = Object.values(tokenOptions);
+        if (opts.length > 0) {
+          handleTokenSelect(opts[0]);
+        }
+      },
+      500,
+      [tokenOptions],
+    ); // eslint-disable-line
+
+    useDebounce(
+      () => {
+        if (searchValue) {
+          const targetToken = Object.values(tokenOptions).find(
+            (token) =>
+              token?.address.toLowerCase() === searchValue.toLowerCase(),
+          );
+          if (targetToken) {
+            setIsCustom(false);
+          } else if (isAddress(searchValue)) {
+            setIsCustom(true);
+          }
+        } else {
+          setIsCustom(false);
+        }
+      },
+      500,
+      [searchValue],
+    ); // eslint-disable-line
 
     return (
       <>
@@ -177,15 +195,11 @@ const TokenSelector = forwardRef(
           ref={ref}
           {...rest}
           onClick={() => {
-            if (editDisabled) return;
+            if (disabled) return;
             if (modalRef.current) modalRef.current.showModal();
           }}
         >
-          <TokenItem
-            small={small}
-            chainId={chainId}
-            selectedToken={selectedToken}
-          />
+          <TokenItem small={small} chainId={chainId} curToken={curToken} />
         </div>
         <dialog ref={modalRef} className="modal">
           <div className="modal-box md:min-w-[540px]">
@@ -198,7 +212,7 @@ const TokenSelector = forwardRef(
                   onChange={(e) => {
                     setSearchValue(e.target.value);
                   }}
-                  disabled={editDisabled}
+                  disabled={disabled}
                   placeholder="input token address"
                   className="input input-bordered w-full"
                 />
@@ -254,9 +268,9 @@ const TokenSelector = forwardRef(
                     <div
                       key={m.address}
                       className={`flex p-2 cursor-pointer mb-1 rounded-lg ${
-                        selectedToken &&
+                        curToken &&
                         m.address.toLowerCase() ==
-                          selectedToken?.address.toLowerCase()
+                          curToken?.address.toLowerCase()
                           ? "bg-blue-100"
                           : "hover:bg-slate-100"
                       }`}
@@ -320,11 +334,11 @@ export default TokenSelector;
 
 function TokenItem({
   chainId,
-  selectedToken,
+  curToken,
   small,
 }: {
   chainId: number;
-  selectedToken: ITokenConf | null;
+  curToken?: Token;
   small?: boolean;
 }) {
   const size = useMemo(() => (small ? 24 : 48), [small]);
@@ -333,36 +347,26 @@ function TokenItem({
     <>
       {small ? (
         <div className="flex items-center p-1 rounded-full border cursor-pointer max-w-28 hover:bg-slate-100">
-          <TokenAvatar
-            size={size}
-            chainId={chainId}
-            tokenData={selectedToken}
-          />
+          <TokenAvatar size={size} chainId={chainId} tokenData={curToken} />
           <div className="flex-1 ml-1">
-            <div className="font-bold">{selectedToken?.symbol}</div>
+            <div className="font-bold">{curToken?.symbol}</div>
           </div>
           <ChevronDownIcon className="w-4 text-base stroke-2" />
         </div>
       ) : (
         <div className="flex items-center p-4 rounded-xl border cursor-pointer hover:bg-slate-100">
-          <TokenAvatar
-            size={size}
-            chainId={chainId}
-            tokenData={selectedToken}
-          />
-          {selectedToken ? (
+          <TokenAvatar size={size} chainId={chainId} tokenData={curToken} />
+          {curToken ? (
             <div className="flex-1 ml-4">
               <p className="text-slate-800 font-bold">
-                {selectedToken?.name}
-                <span className="ml-4 text-slate-600">
-                  {selectedToken?.symbol}
-                </span>
+                {curToken?.name}
+                <span className="ml-4 text-slate-600">{curToken?.symbol}</span>
               </p>
               <p className="text-slate-600 hidden md:inline-block text-sm">
-                {selectedToken?.address}
+                {curToken?.address}
               </p>
               <p className="text-slate-600 md:hidden text-sm">
-                {shortAddress(selectedToken?.address as string)}
+                {shortAddress(curToken?.address as string)}
               </p>
             </div>
           ) : (

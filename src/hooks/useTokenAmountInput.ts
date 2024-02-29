@@ -7,7 +7,7 @@ import useTokenBalanceOf from "hooks/useTokenBalanceOf";
 
 interface useTokenAmountInputProps {
   inputVal: string | number;
-  tokenObj: ITokenConf | null;
+  tokenObj: ITokenConf | undefined;
 }
 
 type useTokenAmountInputReturn = {

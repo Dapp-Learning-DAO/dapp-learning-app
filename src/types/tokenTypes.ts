@@ -1,7 +1,7 @@
 import { SupportedChainId } from "config/chains";
 
 export type ITokenConf = {
-  // chainId: number;
+  chainId: SupportedChainId;
   address: `0x${string}`;
   symbol: string;
   name: string;
@@ -10,10 +10,4 @@ export type ITokenConf = {
   balanceOf?: BigInt;
   balanceOfParsed?: number;
   isUserCustom?: boolean;
-};
-
-export type IChainTokenConfs = { [key: string]: ITokenConf };
-
-export type ITokenConfs = {
-  [chainId: number | SupportedChainId]: IChainTokenConfs;
 };

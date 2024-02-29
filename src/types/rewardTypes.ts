@@ -1,4 +1,4 @@
-import { ITokenConf } from "./tokenTypes";
+import { Token } from "config/tokens";
 
 export type IRewardClaimer = {
   address: `0x${string}`;
@@ -33,7 +33,7 @@ export type IRewardItem = {
   number: number;
   refunded: boolean;
   symbol: string;
-  token: ITokenConf;
+  token: Token;
   tokenAddress: string;
   total: bigint;
   totalParsed: number;
@@ -54,7 +54,7 @@ export type IRewardCreateForm = {
   duration: number;
   durationUnit: number;
   number: number;
-  tokenObj: null | ITokenConf;
+  tokenObj: undefined | Token;
 };
 
 export type IRewardIPFSData = { [cid: string]: `0x${string}`[] };

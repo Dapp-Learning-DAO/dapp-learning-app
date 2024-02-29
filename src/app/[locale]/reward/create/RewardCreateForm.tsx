@@ -5,13 +5,13 @@ import Validate from "utils/validate";
 import TokenSelector from "components/TokenSelector";
 import { IRewardCreateForm } from "types/rewardTypes";
 import AddressListInput from "components/AddressListInput";
-import { ITokenConf } from "types/tokenTypes";
 import { useDebounce } from "react-use";
 import useZKsnark from "hooks/useZKsnark";
 import { keccak256 } from "viem";
 import { MerkleTree } from "merkletreejs";
 import { hashToken } from "utils/getMerkleTree";
 import useTokenAmountInput from "hooks/useTokenAmountInput";
+import { Token } from "config/tokens";
 
 const defaultValues: IRewardCreateForm = {
   isValid: false,
@@ -28,7 +28,7 @@ const defaultValues: IRewardCreateForm = {
   duration: 1,
   durationUnit: 1 * 60 * 60 * 24,
   number: 1,
-  tokenObj: null,
+  tokenObj: undefined,
 };
 
 const RewardCreateForm = forwardRef(
@@ -43,7 +43,7 @@ const RewardCreateForm = forwardRef(
     ref: any,
   ) => {
     const [enablePassword, setEnablePassword] = useState(false);
-    const [tokenObj, setTokenObj] = useState<ITokenConf | null>(null);
+    const [tokenObj, setTokenObj] = useState<Token | undefined>();
     const [changeCount, setChangeCount] = useState(0);
     const { calculatePublicSignals } = useZKsnark();
 
@@ -80,6 +80,15 @@ const RewardCreateForm = forwardRef(
         setChangeCount((prev) => prev + 1); // need trigger when click max btn
       });
     }, [amountParsed, setValue, trigger]);
+
+    useEffect(() => {
+      // @todo set 0 if WETH(ETH)
+      setValue("tokenType", 1);
+      setValue("tokenObj", tokenObj);
+      trigger(["tokenObj", "tokenType"]).then(() => {
+        setChangeCount((prev) => prev + 1);
+      });
+    }, [tokenObj]);
 
     const tokenAmountValidate = (
       value: string | number,
@@ -451,15 +460,9 @@ const RewardCreateForm = forwardRef(
               {...register("tokenObj", {
                 required: true,
               })}
-              editDisabled={editDisabled}
-              onSelect={async (_token) => {
-                // @todo set 0 if WETH(ETH)
-                setValue("tokenType", 1);
-                setValue("tokenObj", _token);
-                setTokenObj(_token);
-                await trigger(["tokenObj", "tokenType"]);
-                setChangeCount((prev) => prev + 1);
-              }}
+              curToken={tokenObj}
+              setCurToken={setTokenObj}
+              disabled={editDisabled}
             />
             {errors.tokenType && (
               <span className="mt-2 text-error text-xs font-bold">

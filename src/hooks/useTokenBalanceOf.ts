@@ -11,7 +11,7 @@ export default function useTokenBalanceOf({
 }) {
   const { address, chain } = useAccount();
   const [isInsufficient, setIsInsufficient] = useState(false);
-  const [balanceOf, setBalanceOf] = useState<bigint | null>(null);
+  const [balanceOf, setBalanceOf] = useState<bigint | undefined>();
 
   const {
     data: balanceOfRes,
@@ -38,7 +38,7 @@ export default function useTokenBalanceOf({
     if (balanceOfRes) {
       setBalanceOf(balanceOfRes);
     } else {
-      setBalanceOf(null);
+      setBalanceOf(undefined);
     }
 
     if (

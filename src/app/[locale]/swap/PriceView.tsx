@@ -17,8 +17,8 @@ export const fetcher = ([endpoint, params]: [
   ZeroXPriceRequestParams,
 ]) => {
   if (!endpoint) return;
-  let { sellToken, sellAmount, buyToken, buyAmount } = params;
-  if (!sellToken || !buyToken) return;
+  let { takerAddress, sellToken, sellAmount, buyToken, buyAmount } = params;
+  if (!takerAddress || !sellToken || !buyToken) return;
   if (!sellAmount && !buyAmount) return;
   if (sellAmount == "0" || buyAmount == "0") return;
 

@@ -1,15 +1,15 @@
 import Image from "next/image";
 import { chainsConf } from "provider/Web3Providers";
-import { ITokenConf } from "types/tokenTypes";
 import { getTokenIcon } from "utils/getTokenIcon";
 import Avatar from "./Avatar";
+import { Token } from "config/tokens";
 
 const TokenAvatar = ({
   tokenData,
   chainId,
   size,
 }: {
-  tokenData: ITokenConf | null;
+  tokenData?: Token;
   chainId: number;
   size: number;
 }) => (

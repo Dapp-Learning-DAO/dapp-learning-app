@@ -102,7 +102,31 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
           }}
           render={({ field, fieldState, formState }) => (
             <div className={`relative w-full bg-slate-100 rounded-xl`}>
-              <div className="text-slate-500 text-sm pt-3 px-4">You pay</div>
+              <div className="flex">
+                <div className="text-slate-500 text-sm pt-3 px-4">You pay</div>
+                <div
+                  className="text-right pr-4 pb-2 cursor-pointer text-slate-500"
+                  style={{ fontSize: 12, height: 46 }}
+                >
+                  Balance:
+                  <span className="ml-1">{maxBalance}</span>
+                  <div
+                    className={`btn btn-sm btn-link pl-1 pr-0 ${
+                      balanceOf && balanceOf > 0n ? "" : "hidden"
+                    }`}
+                    onClick={() => {
+                      setValue("tokenAmountIn", maxBalance);
+                      if ((field.ref as any).current)
+                        (field.ref as any).current.value = maxBalance;
+                      trigger("tokenAmountIn").then(() => {
+                        setChangeCount((prev) => prev + 1); // need trigger when click max btn
+                      });
+                    }}
+                  >
+                    Max
+                  </div>
+                </div>
+              </div>
               <div className="flex items-center px-4">
                 <input
                   {...field}
@@ -117,35 +141,11 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
                   placeholder="0"
                 />
                 <TokenSelector
+                  curToken={sellToken}
+                  setCurToken={setSellToken}
                   small
-                  editDisabled={disabled}
-                  onSelect={async (_token) => {
-                    setSellToken(_token);
-                    setChangeCount((prev) => prev + 1);
-                  }}
+                  disabled={disabled}
                 />
-              </div>
-              <div
-                className="text-right pr-4 pb-2 cursor-pointer text-slate-500"
-                style={{ fontSize: 12, height: 46 }}
-              >
-                Balance:
-                <span className="ml-1">{maxBalance}</span>
-                <div
-                  className={`btn btn-sm btn-link pl-1 pr-0 ${
-                    balanceOf && balanceOf > 0n ? "" : "hidden"
-                  }`}
-                  onClick={() => {
-                    setValue("tokenAmountIn", maxBalance);
-                    if ((field.ref as any).current)
-                      (field.ref as any).current.value = maxBalance;
-                    trigger("tokenAmountIn").then(() => {
-                      setChangeCount((prev) => prev + 1); // need trigger when click max btn
-                    });
-                  }}
-                >
-                  Max
-                </div>
               </div>
             </div>
           )}
@@ -174,12 +174,10 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
               placeholder="0"
             />
             <TokenSelector
+              curToken={buyToken}
+              setCurToken={setBuyToken}
               small
-              editDisabled={disabled}
-              onSelect={async (_token) => {
-                setBuyToken(_token);
-                setChangeCount((prev) => prev + 1);
-              }}
+              disabled={disabled}
             />
           </div>
           <div style={{ height: 46 }}></div>
