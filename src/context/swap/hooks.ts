@@ -16,7 +16,7 @@ export enum TradeState {
 }
 
 export type SwapInfo = {
-  currencies: { [field in Field]?: ITokenConf };
+  currencies: { [field in Field]?: Token };
   currencyBalances: { [field in Field]?: bigint };
   outputFeeFiatValue?: number;
   parsedAmount?: bigint;
@@ -34,13 +34,15 @@ export type SwapInfo = {
 };
 
 // from the current swap inputs, compute the best trade and return it.
-export function useDerivedSwapInfo(state: SwapState): SwapInfo {
+export function useDerivedSwapInfo({
+  independentField,
+  typedValue,
+}: SwapState): SwapInfo {
   const { address, isConnected } = useAccount();
 
   const {
     currencyState: { inputCurrency, outputCurrency },
   } = useSwapStateContext();
-  const { independentField, typedValue } = state;
 
   const { balanceOf: inputCurrencyBalance } = useTokenBalanceOf({
     tokenAddr: inputCurrency ? inputCurrency.address : undefined,

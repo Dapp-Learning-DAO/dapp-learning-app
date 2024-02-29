@@ -1,5 +1,6 @@
 import { ITokenConf } from "types/tokenTypes";
 import { SupportedChainId } from "./chains";
+import { ETH_TOKEN_ADDRESS } from "./constants";
 
 export class Token implements ITokenConf {
   chainId: SupportedChainId;
@@ -40,6 +41,10 @@ export class Token implements ITokenConf {
       this.chainId === otherToken.chainId
     );
   }
+
+  isETH(): boolean {
+    return this.address.toLowerCase() === ETH_TOKEN_ADDRESS;
+  }
 }
 
 export type IChainTokenConfs = { [key: string]: Token };
@@ -50,6 +55,13 @@ export type ITokenConfs = {
 
 export let TokenConf: ITokenConfs = {
   [SupportedChainId.OPTIMISM]: {
+    ETH: new Token({
+      chainId: SupportedChainId.OPTIMISM,
+      address: ETH_TOKEN_ADDRESS,
+      decimals: 18,
+      symbol: "ETH",
+      name: "ETH",
+    }),
     USDT: new Token({
       chainId: SupportedChainId.OPTIMISM,
       address: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
@@ -87,6 +99,13 @@ export let TokenConf: ITokenConfs = {
     }),
   },
   [SupportedChainId.ARBITRUM_ONE]: {
+    ETH: new Token({
+      chainId: SupportedChainId.ARBITRUM_ONE,
+      address: ETH_TOKEN_ADDRESS,
+      decimals: 18,
+      symbol: "ETH",
+      name: "ETH",
+    }),
     USDT: new Token({
       chainId: SupportedChainId.ARBITRUM_ONE,
       address: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
@@ -124,6 +143,13 @@ export let TokenConf: ITokenConfs = {
     }),
   },
   [SupportedChainId.SCROLL]: {
+    ETH: new Token({
+      chainId: SupportedChainId.SCROLL,
+      address: ETH_TOKEN_ADDRESS,
+      decimals: 18,
+      symbol: "ETH",
+      name: "ETH",
+    }),
     USDT: new Token({
       chainId: SupportedChainId.SCROLL,
       address: "0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df",
@@ -147,6 +173,13 @@ export let TokenConf: ITokenConfs = {
     }),
   },
   [SupportedChainId.SEPOLIA]: {
+    ETH: new Token({
+      chainId: SupportedChainId.SEPOLIA,
+      address: ETH_TOKEN_ADDRESS,
+      decimals: 18,
+      symbol: "ETH",
+      name: "ETH",
+    }),
     TST: new Token({
       chainId: SupportedChainId.SEPOLIA,
       address: "0xcd789635ed87F6dF5731B89F27EFC838cd5870E3",

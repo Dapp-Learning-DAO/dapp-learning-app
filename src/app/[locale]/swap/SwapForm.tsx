@@ -1,11 +1,14 @@
 "use client";
 import TokenSelector from "components/TokenSelector";
-import { useEffect, useState } from "react";
+import { ElementRef, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDebounce } from "react-use";
-import { ITokenConf } from "types/tokenTypes";
 import useTokenAmountInput from "hooks/useTokenAmountInput";
 import { ArrowDownIcon } from "@heroicons/react/24/outline";
+import { Token } from "config/tokens";
+import { useSwapContext, useSwapStateContext } from "context/swap/SwapContext";
+import { formatUnits, parseUnits } from "viem";
+import { Field } from "context/swap/constants";
 
 export interface ISwapForm {
   tokenAmountIn: string | number;
@@ -16,8 +19,8 @@ export type ISwapInputFormData = {
   sellAmount: bigint;
   buyAmount: bigint;
   tradeDirection: string;
-  sellToken: null | ITokenConf;
-  buyToken: null | ITokenConf;
+  sellToken: undefined | Token;
+  buyToken: undefined | Token;
 };
 
 export interface ISwapFormProps {
@@ -25,131 +28,94 @@ export interface ISwapFormProps {
 }
 
 export default function SwapForm({ onChange }: ISwapFormProps) {
-  const [buyAmount, setBuyAmount] = useState(0n);
-  const [sellAmount, setSellAmount] = useState(0n);
-  const [tradeDirection, setTradeDirection] = useState("sell");
-  const [sellToken, setSellToken] = useState<ITokenConf | null>(null);
-  const [buyToken, setBuyToken] = useState<ITokenConf | null>(null);
+  const [sellToken, setSellToken] = useState<Token | undefined>();
+  const [buyToken, setBuyToken] = useState<Token | undefined>();
   const [changeCount, setChangeCount] = useState(0);
 
-  const {
-    register,
-    getValues,
-    watch,
-    control,
-    reset,
-    resetField,
-    trigger,
-    setValue,
-    setError,
-    clearErrors,
-    handleSubmit,
-    unregister,
-    formState: { errors, isValid, isValidating, dirtyFields, touchedFields },
-  } = useForm<ISwapForm>({
-    mode: "onChange",
-    criteriaMode: "all",
-    defaultValues: {
-      tokenAmountIn: "",
-      tokenAmountOut: "",
-    },
-  });
+  const inputTokenRef = useRef<ElementRef<"input">>(null);
+  const outputTokenRef = useRef<ElementRef<"input">>(null);
 
-  const { balanceOf, maxBalance, isInsufficient, amountParsed } =
-    useTokenAmountInput({
-      inputVal:
-        tradeDirection == "sell"
-          ? getValues("tokenAmountIn")
-          : getValues("tokenAmountOut"),
-      tokenObj: tradeDirection == "sell" ? sellToken : buyToken,
-    });
+  const {
+    swapState,
+    setSwapState,
+    derivedSwapInfo: { currencies, currencyBalances, inputError },
+  } = useSwapContext();
+
+  const { currencyState, setCurrencyState } = useSwapStateContext();
 
   useEffect(() => {
-    if (tradeDirection == "sell") {
-      setBuyAmount(amountParsed);
-    } else {
-      setSellAmount(amountParsed);
-    }
-  }, [amountParsed]);
+    setCurrencyState({
+      inputCurrency: sellToken,
+      outputCurrency: buyToken,
+    });
+  }, [sellToken, buyToken, setCurrencyState]);
 
-  useDebounce(
-    () => {
-      onChange({
-        sellAmount,
-        buyAmount,
-        tradeDirection,
-        sellToken,
-        buyToken,
-      });
-    },
-    500,
-    [changeCount],
-  );
-
+  const maxBalance =
+    currencyBalances.INPUT && currencies.INPUT
+      ? formatUnits(currencyBalances.INPUT, currencies.INPUT?.decimals)
+      : "";
   const disabled = false; // @todo
 
   return (
     <form>
       <div className="relative">
-        <Controller
-          name="tokenAmountIn"
-          control={control}
-          rules={{
-            required: true,
-            validate: (value, formValues) => {
-              return true;
-            },
-          }}
-          render={({ field, fieldState, formState }) => (
-            <div className={`relative w-full bg-slate-100 rounded-xl`}>
-              <div className="flex">
-                <div className="text-slate-500 text-sm pt-3 px-4">You pay</div>
-                <div
-                  className="text-right pr-4 pb-2 cursor-pointer text-slate-500"
-                  style={{ fontSize: 12, height: 46 }}
-                >
-                  Balance:
-                  <span className="ml-1">{maxBalance}</span>
-                  <div
-                    className={`btn btn-sm btn-link pl-1 pr-0 ${
-                      balanceOf && balanceOf > 0n ? "" : "hidden"
-                    }`}
-                    onClick={() => {
-                      setValue("tokenAmountIn", maxBalance);
-                      if ((field.ref as any).current)
-                        (field.ref as any).current.value = maxBalance;
-                      trigger("tokenAmountIn").then(() => {
-                        setChangeCount((prev) => prev + 1); // need trigger when click max btn
-                      });
-                    }}
-                  >
-                    Max
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center px-4">
-                <input
-                  {...field}
-                  className="w-full h-full bg-transparent text-3xl"
-                  style={{
-                    height: `70px`,
-                    lineHeight: `70px`,
-                    outline: "none",
-                  }}
-                  type="text"
-                  disabled={disabled}
-                  placeholder="0"
-                />
-                <TokenSelector
-                  curToken={sellToken}
-                  setCurToken={setSellToken}
-                  small
-                  disabled={disabled}
-                />
+        <div className={`relative w-full bg-slate-100 rounded-xl`}>
+          <div className="flex">
+            <div className="text-slate-500 text-sm pt-3 px-4">You pay</div>
+            <div
+              className="text-right pr-4 pb-2 cursor-pointer text-slate-500"
+              style={{ fontSize: 12, height: 46 }}
+            >
+              Balance:
+              <span className="ml-1">{maxBalance}</span>
+              <div
+                className={`btn btn-sm btn-link pl-1 pr-0 ${
+                  currencyBalances.INPUT && currencyBalances.INPUT > 0n
+                    ? ""
+                    : "hidden"
+                }`}
+                onClick={() => {
+                  setSwapState((prevState) => ({
+                    independentField: Field.INPUT,
+                    typedValue: maxBalance,
+                  }));
+                  if ((inputTokenRef as any).current)
+                    (inputTokenRef as any).current.value = maxBalance;
+                }}
+              >
+                Max
               </div>
             </div>
-          )}
-        />
+          </div>
+          <div className="flex items-center px-4">
+            <input
+              ref={inputTokenRef}
+              className="w-full h-full bg-transparent text-3xl"
+              style={{
+                height: `70px`,
+                lineHeight: `70px`,
+                outline: "none",
+              }}
+              type="text"
+              disabled={disabled}
+              placeholder="0"
+              onChange={(e) => {
+                const value = e.target.value;
+                setSwapState((prevState) => ({
+                  independentField: Field.INPUT,
+                  typedValue: value,
+                }));
+              }}
+            />
+            <TokenSelector
+              curToken={sellToken}
+              setCurToken={setSellToken}
+              small
+              disabled={disabled}
+            />
+          </div>
+        </div>
+
         <div
           className="p-2 border border-white bg-slate-100 rounded-xl cursor-pointer absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
           style={{ borderWidth: 4 }}
@@ -163,6 +129,7 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
           <div className="text-slate-500 text-sm pt-3 px-4">You recieve</div>
           <div className="flex items-center px-4">
             <input
+              ref={outputTokenRef}
               className="w-full h-full bg-transparent text-3xl"
               style={{
                 height: `70px`,
@@ -172,6 +139,13 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
               type="text"
               disabled={disabled}
               placeholder="0"
+              onChange={(e) => {
+                const value = e.target.value;
+                setSwapState((prevState) => ({
+                  independentField: Field.OUTPUT,
+                  typedValue: value,
+                }));
+              }}
             />
             <TokenSelector
               curToken={buyToken}
@@ -183,9 +157,9 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
           <div style={{ height: 46 }}></div>
         </div>
       </div>
-      {isInsufficient && (
-        <div className="text-error font-bold">Insufficient Balance</div>
-      )}
+      {inputError}
+      {JSON.stringify(swapState)}
+      {JSON.stringify(currencies)}
     </form>
   );
 }

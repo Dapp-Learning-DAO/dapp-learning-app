@@ -7,6 +7,7 @@ import { ZeroXPriceRequestParams, ZeroXPriceResponse } from "api/zerox/types";
 import { ITokenConf } from "types/tokenTypes";
 import { useAccount } from "wagmi";
 import SwapForm, { ISwapInputFormData } from "./SwapForm";
+import { useSwapStateContext } from "context/swap/SwapContext";
 
 // @todo
 const AFFILIATE_FEE = 0.0; // Percentage of the buyAmount that should be attributed to feeRecipient as affiliate fees
@@ -27,22 +28,16 @@ export const fetcher = ([endpoint, params]: [
   return fetch(`${endpoint}?${query}`).then((res) => res.json());
 };
 
-export default function PriceView({
-  price,
-  setPrice,
-  setFinalize,
-}: {
-  price: ZeroXPriceResponse | undefined;
-  setPrice: (_price: ZeroXPriceResponse) => void;
-  setFinalize: (_finalize: boolean) => void;
-}) {
+export default function PriceView() {
   const { address } = useAccount();
+  const { price, setPrice, finalize, setFinalize } = useSwapStateContext();
+
   const [formData, setFormData] = useState<ISwapInputFormData>({
     sellAmount: 0n,
     buyAmount: 0n,
     tradeDirection: "sell",
-    sellToken: null,
-    buyToken: null,
+    sellToken: undefined,
+    buyToken: undefined,
   });
   const { sellAmount, buyAmount, tradeDirection, sellToken, buyToken } =
     formData;

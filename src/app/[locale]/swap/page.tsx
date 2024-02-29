@@ -2,17 +2,36 @@
 
 import { useState } from "react";
 import PriceView from "./PriceView";
-import { ZeroXPriceResponse } from "api/zerox/types";
+import {
+  SwapContextProvider,
+  SwapStateContext,
+  SwapStateContextProvider,
+} from "context/swap/SwapContext";
+import { TokenConf } from "config/tokens";
+import { useParams } from "next/navigation";
+import QuoteView from "./QuoteView";
 
 export default function SwapPage() {
-  const [tradeDirection, setTradeDirection] = useState("sell");
-  const [finalize, setFinalize] = useState(false);
-  const [price, setPrice] = useState<ZeroXPriceResponse | undefined>();
-  const [quote, setQuote] = useState();
+  const { chainId } = useParams<{ chainId: string }>();
+
+  const initialInputCurrency = chainId
+    ? TokenConf[Number(chainId)]["ETH"]
+    : undefined;
+  const initialOutputCurrency = undefined;
 
   return (
-    <div>
-      <PriceView price={price} setPrice={setPrice} setFinalize={setFinalize} />
-    </div>
+    <SwapStateContextProvider
+      chainId={Number(chainId)}
+      initialInputCurrency={initialInputCurrency}
+      initialOutputCurrency={initialOutputCurrency}
+    >
+      <SwapStateContext.Consumer>
+        {({ finalize }) => (
+          <SwapContextProvider>
+            {finalize == 0n ? <PriceView /> : <QuoteView />}
+          </SwapContextProvider>
+        )}
+      </SwapStateContext.Consumer>
+    </SwapStateContextProvider>
   );
 }

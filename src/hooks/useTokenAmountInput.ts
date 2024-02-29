@@ -1,13 +1,13 @@
 "use client";
-import { ITokenConf } from "types/tokenTypes";
 import { useState } from "react";
 import { useDebounce } from "react-use";
 import { formatUnits, parseUnits } from "viem";
 import useTokenBalanceOf from "hooks/useTokenBalanceOf";
+import { Token } from "config/tokens";
 
 interface useTokenAmountInputProps {
   inputVal: string | number;
-  tokenObj: ITokenConf | undefined;
+  tokenObj?: Token;
 }
 
 type useTokenAmountInputReturn = {
