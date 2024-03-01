@@ -8,12 +8,12 @@ export default function Page() {
   const scopedT = useScopedI18n("hello");
 
   return (
-    <div className="container m-auto p-16">
-      <div className="grid grid-cols-3">
-        <div className="card w-96 bg-base-100 border shadow-sm m-auto max-w-md">
+    <div className="container m-auto p-8 sm:p-16">
+      <div className="grid sm:grid-cols-3">
+        <div className="card w-full bg-base-100 border shadow-sm m-auto max-w-md">
           <div className="card-body">
             <h2 className="card-title">Redpacket</h2>
-            <p>Ready to use a fully decentralized ZK encryption tool?</p>
+            <p>Ready to use a fully decentralized, ZK encryption Redpacket?</p>
             <div className="card-actions justify-end">
               <Link href="/reward">
                 <button className="btn btn-primary">Go</button>
