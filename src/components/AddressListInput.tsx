@@ -10,6 +10,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { shortAddress } from "utils/index";
 import { isAddress } from "viem";
 // import Papa from 'papaparse';
 
@@ -37,12 +38,10 @@ const AddressListInput = forwardRef(
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const handleInputAddAddress = (
-      e: React.KeyboardEvent<HTMLInputElement>,
-    ) => {
-      setErrorTxt("");
-      let input = e.currentTarget.value.trim();
-      if (e.key === "Enter") {
+    const handleInputAddAddress = debounce(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        setErrorTxt("");
+        let input = e.target.value.trim();
         if (isAddress(input)) {
           if (addresses.has(input)) {
             setErrorTxt(`Address already exsist`);
@@ -53,13 +52,14 @@ const AddressListInput = forwardRef(
             newSet.add(input);
             return newSet;
           });
-          e.currentTarget.value = "";
+          e.target.value = "";
         } else {
           setErrorTxt(`Invalid address`);
           return;
         }
-      }
-    };
+      },
+      500,
+    );
 
     const handleTextareaChange = debounce(
       (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -175,75 +175,69 @@ const AddressListInput = forwardRef(
         </div>
         {mode == 0 && (
           <>
-            <div className="flex">
-              <input
-                placeholder="input address and press enter"
-                className="textarea textarea-bordered flex-1 mr-4"
-                onKeyDown={handleInputAddAddress}
-                disabled={disabled}
-              />
+            <input
+              placeholder="input address and press enter"
+              className="textarea textarea-bordered flex-1"
+              onChange={handleInputAddAddress}
+              disabled={disabled}
+            />
+            <div className="my-1 min-h-3 text-error font-bold text-sm">
+              {errorTxt}
             </div>
-            {errorTxt ? (
-              <div className="my-1 min-h-3 text-error font-bold text-sm">
-                {errorTxt}
-              </div>
-            ) : (
-              <div className="my-1 min-h-3 text-slate-500 text-sm">
-                Input address and press <span className="font-bold">Enter</span>
-                .
-              </div>
-            )}
           </>
         )}
         {mode == 1 && (
           <>
-            <div className="flex relative">
+            <div className="relative">
               <textarea
                 ref={textareaRef}
                 placeholder="input address and press enter"
-                className="textarea textarea-bordered flex-1 pb-12 mr-4"
+                className="block w-full textarea textarea-bordered flex-1 pb-12 mr-4"
                 onChange={handleTextareaChange}
                 disabled={disabled}
               />
-              {textareaVal && (
-                <div className="flex justify-end items-center absolute bottom-2 right-6">
-                  <button
-                    className="btn btn-sm btn-link text-slate-500 normal-case no-underline mr-1"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (textareaRef.current) {
-                        textareaRef.current.value = "";
-                        setTextareaVal("");
-                      }
-                    }}
-                  >
-                    Clear
-                  </button>
-                  <button
-                    className="btn btn-sm btn-link normal-case no-underline"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      processTextarea();
-                    }}
-                  >
-                    Confirm
-                  </button>
+              {errorTxt ? (
+                <div className="my-1 min-h-3 text-error font-bold text-sm">
+                  {errorTxt}
+                </div>
+              ) : (
+                <div className="my-1 min-h-3 text-slate-500 text-sm">
+                  Enter a list of addresses, separated by{" "}
+                  <span className="font-bold">
+                    comma, semicolon, or new line
+                  </span>
+                  .
                 </div>
               )}
             </div>
-            {errorTxt ? (
-              <div className="my-1 min-h-3 text-error font-bold text-sm">
-                {errorTxt}
-              </div>
-            ) : (
-              <div className="my-1 min-h-3 text-slate-500 text-sm">
-                Enter a list of addresses, separated by{" "}
-                <span className="font-bold">comma, semicolon, or new line</span>
-                .
-              </div>
-            )}
+            <div className="flex justify-end items-center my-2 mr-4">
+              {textareaVal && (
+                <button
+                  className="btn btn-sm btn-link text-slate-500 normal-case no-underline mr-1"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (textareaRef.current) {
+                      textareaRef.current.value = "";
+                      setTextareaVal("");
+                    }
+                  }}
+                >
+                  Clear
+                </button>
+              )}
+              <button
+                className={`text-sm underline ${!textareaVal ? "text-slate-500" : "text-primary"}`}
+                disabled={!textareaVal}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  processTextarea();
+                }}
+              >
+                Confirm
+              </button>
+            </div>
           </>
         )}
 
@@ -271,7 +265,10 @@ const AddressListInput = forwardRef(
                 key={index}
                 className="badge badge-xl w-full rounded-none py-4 pl-4 pr-10 relative overflow-hidden mb-1"
               >
-                {address}
+                <span className="hidden sm:inline">{address}</span>
+                <span className="inline sm:hidden">
+                  {shortAddress(address)}
+                </span>
                 <div
                   className="absolute px-1 py-2 right-0 bg-error cursor-pointer"
                   onClick={(e: any) => {

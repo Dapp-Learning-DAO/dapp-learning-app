@@ -25,7 +25,6 @@ export default function RewardDetailPage({
   const router = useRouter();
   const connectedChainId = useChainId();
   const searchParams = useSearchParams();
-  console.warn(searchParams);
 
   const { data: item, loading: gqlLoading, refetch } = useRedpacket({ id });
   const [closeDisabled, setCloseDisabled] = useState(false);
@@ -55,7 +54,7 @@ export default function RewardDetailPage({
       ) : (
         <div
           className={`m-auto ${
-            !isModal ? "card border rounded-xl p-12 max-w-xl" : ""
+            !isModal ? "card border rounded-xl py-12 max-w-xl px-4" : ""
           }`}
           style={{ maxHeight: isModal ? "calc(100vh - 3em)" : "auto" }}
         >
@@ -73,8 +72,10 @@ export default function RewardDetailPage({
                 <XCircleIcon className="w-6" />
               </button>
             )}
-            <div className="overflow-y-auto max-h-[30vh] md:max-h-[50vh] mb-4 py-4 pr-2">
-              <div className="py-4 min-h-40vh min-w-fit">
+            <div
+              className={`overflow-y-auto max-h-[30vh] md:max-h-[50vh] mb-4 py-4`}
+            >
+              <div className={`py-4 min-h-40vh ${isModal ? "px-2" : "px-4"}`}>
                 {item && <RedPacketInfo item={item} />}
               </div>
             </div>

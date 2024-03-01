@@ -63,7 +63,7 @@ const SideNav = forwardRef((props, ref: any) => {
   return (
     <nav
       ref={ref}
-      className="fixed z-20 left-0 top-0 flex flex-col min-h-screen pl-5 pt-5 bg-base-100 shadow"
+      className="fixed z-20 left-0 top-0 flex-col min-h-screen pl-5 pt-5 bg-base-100 shadow hidden sm:flex"
       style={{ width: SIDE_NAV_WIDTH }}
     >
       <div className="pr-5 mb-12">

@@ -204,10 +204,10 @@ const RewardCreateForm = forwardRef(
             )}
           </div>
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
-            <div className="flex">
+            <div className="flex items-center">
               <span className="flex-1">
                 <strong>Password</strong>
-                <span className="text-sm text-slate-500 ml-4">
+                <span className="text-sm text-slate-500 ml-4 hidden sm:inline">
                   (set claim password)
                 </span>
               </span>
