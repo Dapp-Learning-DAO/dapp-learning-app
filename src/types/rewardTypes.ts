@@ -14,6 +14,7 @@ export type IRewardItem = {
   allClaimed: boolean;
   claimedNumber: number;
   claimedValueParsed: number | null | undefined;
+  addressList: `0x${string}`[];
   claimers: IRewardClaimer[];
   creationTime: string | number;
   creator: `0x${string}`;

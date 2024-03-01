@@ -106,6 +106,7 @@ export default function CreateRedpacketPage() {
     setFormData(null);
     setIpfsCid(null);
     writeReset();
+    setTs(Math.floor(new Date().getTime() / 1000));
   }, [writeReset]);
 
   useEffect(() => {
@@ -114,7 +115,7 @@ export default function CreateRedpacketPage() {
       reset();
     }
     if (txRes) {
-      emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 30 * 1000);
+      emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 60 * 1000);
       sessionStorage.setItem(REWARD_LIST_REFRESH_EVENT, `${30 * 1000}`);
       showAlertMsg(alertBoxRef, "Create Successfully!", "success");
       console.log("CreationSuccess", txRes);
@@ -262,7 +263,7 @@ export default function CreateRedpacketPage() {
             <div className="mb-4">
               <ApproveBtn
                 ref={approveBtnRef}
-                autoHidden
+                // autoHidden
                 tokenAddr={selectedTokenAddr as `0x${string}`}
                 exceptedAllowance={exceptedAllowance}
                 onApprovalChange={setIsApproved}

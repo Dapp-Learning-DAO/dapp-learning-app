@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import RedPacketItem from "./rewardComponents/RewardItem";
+import { useChainId } from "wagmi";
 
 const tabList = ["Claimable", "Claimed", "Expired", "Created"];
 
@@ -13,6 +14,7 @@ export default function RewardListPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const chainId = useChainId();
 
   const [curTab, setCurTab] = useState(0);
   const {
@@ -85,7 +87,10 @@ export default function RewardListPage() {
             <div className="grid grid-cols-2 md:grid-cols-4">
               {unclaimList.map((item, index) => {
                 return (
-                  <Link key={index} href={`/reward/detail/${item.id}`}>
+                  <Link
+                    key={index}
+                    href={`/reward/detail/${item.id}?chainId=${chainId}`}
+                  >
                     <RedPacketItem item={item} />
                   </Link>
                 );
@@ -103,7 +108,10 @@ export default function RewardListPage() {
             <div className="grid grid-cols-2 md:grid-cols-4">
               {claimedList.map((item, index) => {
                 return (
-                  <Link key={index} href={`/reward/detail/${item.id}`}>
+                  <Link
+                    key={index}
+                    href={`/reward/detail/${item.id}?chainId=${chainId}`}
+                  >
                     <RedPacketItem item={item} />
                   </Link>
                 );
@@ -121,7 +129,10 @@ export default function RewardListPage() {
             <div className="grid grid-cols-2 md:grid-cols-4">
               {expiredList.map((item, index) => {
                 return (
-                  <Link key={index} href={`/reward/detail/${item.id}`}>
+                  <Link
+                    key={index}
+                    href={`/reward/detail/${item.id}?chainId=${chainId}`}
+                  >
                     <RedPacketItem item={item} />
                   </Link>
                 );
@@ -139,7 +150,10 @@ export default function RewardListPage() {
             <div className="grid grid-cols-2 md:grid-cols-4">
               {createdList.map((item, index) => {
                 return (
-                  <Link key={index} href={`/reward/detail/${item.id}`}>
+                  <Link
+                    key={index}
+                    href={`/reward/detail/${item.id}?chainId=${chainId}`}
+                  >
                     <RedPacketItem item={item} />
                   </Link>
                 );

@@ -180,6 +180,7 @@ export function processRedpacketItem(
   let tokenAddress: string | null = null;
   let decimals: number | null = null;
   let symbol: string | null = null;
+  let addressList: `0x${string}`[] = [];
   let ipfsClaimers: IRewardClaimer[] = [];
 
   if (item.token) {
@@ -192,6 +193,7 @@ export function processRedpacketItem(
     if (isCidMsgValid(item.message)) {
       const _cid = item.message.split("_")[2];
       if (_ipfsData[_cid]) {
+        addressList = _ipfsData[_cid];
         ipfsClaimers = _ipfsData[_cid].map((_addr: `0x${string}`) => ({
           address: _addr,
           claimer: _addr,
@@ -277,6 +279,7 @@ export function processRedpacketItem(
     decimals,
     symbol,
     claimers,
+    addressList,
     claimedValueParsed: userClaimedValue,
     total: item?.total,
     totalParsed:

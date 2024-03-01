@@ -85,8 +85,8 @@ export default function ClaimBtn({
   } = useWriteContract();
 
   useEffect(() => {
-    if (address && item?.claimers && item.claimers.length > 0) {
-      const merkleTree = getMerkleTree(item.claimers.map((row) => row.address));
+    if (address && item?.addressList && item.addressList.length > 0) {
+      const merkleTree = getMerkleTree(item.addressList);
       let _proof = merkleTree.getHexProof(hashToken(address as `0x${string}`));
       let _root = merkleTree.getHexRoot();
 
@@ -107,7 +107,7 @@ export default function ClaimBtn({
       setProof([]);
       setMerkleVrified(false);
     }
-  }, [address, item?.claimers]);
+  }, [address, item?.addressList]);
 
   useEffect(() => {
     if (simErrorMsg) {
