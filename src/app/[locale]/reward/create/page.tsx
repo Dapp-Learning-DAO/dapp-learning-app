@@ -280,7 +280,7 @@ export default function CreateRedpacketPage() {
                 {(submitClicked || submitLoading) && (
                   <div className="loading loading-spinner loading-md inline-block mr-2"></div>
                 )}
-                {submitClicked || submitLoading ? "Loading" : "Submit"}
+                {submitClicked || submitLoading ? "Loading" : "Create"}
               </button>
             </div>
           </div>

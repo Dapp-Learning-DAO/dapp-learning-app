@@ -37,9 +37,11 @@ export default function RewardListPage() {
       <AutoSwitchNetwork forceSwitch={false} />
       <div className="py-6 text-center">
         <div className="m-auto relative inline-flex items-center justify-center">
-          {loading && (
-            <span className="absolute loading loading-spinner loading-sm m-auto top-[50%] -translate-y-1/2 left-[-28px] "></span>
-          )}
+          <div className="hidden sm:block">
+            {loading && (
+              <span className="absolute loading loading-spinner loading-sm m-auto top-[50%] -translate-y-1/2 left-[-28px] "></span>
+            )}
+          </div>
           <div
             role="tablist"
             className="tabs tabs-boxed m-auto overflow-x-auto"
