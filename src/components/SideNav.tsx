@@ -67,15 +67,17 @@ const SideNav = forwardRef((props, ref: any) => {
       style={{ width: SIDE_NAV_WIDTH }}
     >
       <div className="pr-5 mb-12">
-        <Image
-          className="w-full"
-          src={`/images/nav-logo-${theme ? theme : "light"}.png`}
-          style={{ objectFit: "contain" }}
-          width={784}
-          height={192}
-          alt="DappLearning logo"
-          priority
-        />
+        <Link href="/">
+          <Image
+            className="w-full"
+            src={`/images/nav-logo-${theme ? theme : "light"}.png`}
+            style={{ objectFit: "contain" }}
+            width={784}
+            height={192}
+            alt="DappLearning logo"
+            priority
+          />
+        </Link>
       </div>
       <ul className="flex-1">
         {NAV_LINKS.map((navs) => (
