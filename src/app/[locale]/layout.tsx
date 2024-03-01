@@ -2,8 +2,8 @@
 import { Inter } from "next/font/google";
 
 // style
-import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
+import "./globals.css";
 
 // config
 import { metadata as metadataConf } from "config/seo";

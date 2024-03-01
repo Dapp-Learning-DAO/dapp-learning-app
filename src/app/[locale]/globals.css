@@ -1,12 +1,19 @@
+/* tailwindcss */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* daisy.ui */
 :root {
   --p: 0.49 0.29 281.1;
   --s: 0.74 0.12 263.1;
   --su: 0.72 0.16 159.1;
   --er: 0.74 0.16 21.6;
+}
+
+/* rainbow-kit */
+[data-rk] {
+  --rk-shadows-connectButton: 0px 0px 2px rgba(0, 0, 0, 0.1) !important;
 }
 
 body {

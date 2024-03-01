@@ -1,10 +1,10 @@
 "use client";
 
-import SideNav, { SIDE_NAV_WIDTH } from "components/SideNav";
+import SideNav from "components/SideNav";
 import Footer from "components/Footer";
 import HeaderNav from "./HeaderNav";
 import { useRef, useState } from "react";
-import { useDebounce, useWindowSize } from "react-use";
+import { useDebounce, useMedia, useWindowSize } from "react-use";
 
 export default function AppContainer({
   children,
@@ -15,16 +15,18 @@ export default function AppContainer({
 }>) {
   const sideRef = useRef(null);
   const headerRef = useRef(null);
-  const { width } = useWindowSize();
-  const [isModal, setIsModal] = useState(false);
+  const isMobile = useMedia("(max-width: 768px)");
 
-  useDebounce(
-    () => {
-      setIsModal(width < 450);
-    },
-    200,
-    [width],
-  );
+  // const { width } = useWindowSize();
+  // const [isMobile, setIsMobile] = useState(false);
+
+  // useDebounce(
+  //   () => {
+  //     setIsMobile(width < 450);
+  //   },
+  //   200,
+  //   [width],
+  // );
 
   return (
     <div
@@ -36,7 +38,7 @@ export default function AppContainer({
         <HeaderNav ref={headerRef} />
         <div
           style={{
-            minHeight: `calc(100vh - ${isModal ? 84 : 112}px)`,
+            minHeight: `calc(100vh - ${isMobile ? 84 : 112}px)`,
             paddingTop: 72,
           }}
         >
