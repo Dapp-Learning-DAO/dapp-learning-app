@@ -4,7 +4,7 @@ import { RedPacketsListsGraph } from "../gql/RedpacketGraph";
 import { useAccount, useChainId } from "wagmi";
 import { useEffect, useState } from "react";
 import { useDebounce } from "react-use";
-import { formatUnits } from "viem";
+import { formatUnits, isAddressEqual } from "viem";
 import { ZERO_BYTES32 } from "config/constants";
 import {
   IRewardClaimer,
@@ -130,7 +130,9 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
         setClaimedList(_claimedList);
       }
       if (data.Expired) {
-        _expiredList = processGqlData(data.Expired);
+        _expiredList = processGqlData(data.Expired).filter(
+          (_row) => _row.isInClaimers,
+        );
         setExpiredList(_expiredList);
       }
       if (data.Created) {
@@ -204,35 +206,45 @@ export function processRedpacketItem(
 
   let claimedValueParsed = null;
   // @todo map from ipfsClaimers
-  let claimers: IRewardClaimer[] = ipfsClaimers.map((rowItem) => {
-    let findRes;
-    findRes =
-      item.claimers &&
-      item.claimers.find(
-        (claimerItem: IRewardClaimer) =>
-          claimerItem.claimer.toLowerCase() == rowItem.address.toLowerCase(),
-      );
-    if (findRes) {
-      claimedValueParsed = decimals
-        ? Number(formatUnits(BigInt(findRes.claimedValue), decimals).toString())
-        : null;
-      return {
-        address: findRes.claimer as `0x${string}`,
-        claimer: findRes.claimer,
-        isClaimed: true,
-        tokenAddress: tokenAddress,
-        claimedValue: findRes.claimedValue,
-        claimedValueParsed,
-      };
-    } else {
-      return rowItem;
-    }
-  });
+  let claimers: IRewardClaimer[] = ipfsClaimers
+    .map((rowItem) => {
+      rowItem.isMe = isAddressEqual(address, rowItem.address);
+      let findRes;
+      findRes =
+        item.claimers &&
+        item.claimers.find((claimerItem: IRewardClaimer) =>
+          isAddressEqual(claimerItem.claimer as `0x${string}`, rowItem.address),
+        );
+      if (findRes) {
+        claimedValueParsed = decimals
+          ? Number(
+              formatUnits(BigInt(findRes.claimedValue), decimals).toString(),
+            )
+          : null;
+        return {
+          address: findRes.claimer as `0x${string}`,
+          claimer: findRes.claimer,
+          isClaimed: true,
+          tokenAddress: tokenAddress,
+          claimedValue: findRes.claimedValue,
+          claimedValueParsed,
+          isMe: rowItem.isMe,
+        };
+      } else {
+        return rowItem;
+      }
+    })
+    .sort((a, b) => {
+      // sort claimers list
+      if (a.isMe) return -1;
+      if (a.isClaimed && b.isClaimed) return 0;
+      if (a.isClaimed && !b.isClaimed) return -1;
+      return 0;
+    });
 
   const isClaimed = claimers.some(
     (claimerItem: IRewardClaimer) =>
-      claimerItem.address.toLowerCase() == address?.toLowerCase() &&
-      claimerItem.isClaimed,
+      isAddressEqual(claimerItem.address, address) && claimerItem.isClaimed,
   );
   const hashLock =
     item?.lock && item?.lock !== ZERO_BYTES32 ? item?.lock : null;
@@ -240,16 +252,13 @@ export function processRedpacketItem(
   const claimedNumber = item?.claimers.length;
   const allClaimed = item?.allClaimed;
   const isRefunded = item?.refunded;
-  const isCreator = item?.creator.toLowerCase() == address.toLowerCase();
-  const isClaimable =
-    !isClaimed &&
-    !isExpired &&
-    ipfsClaimers.some(
-      (_row) => _row.address.toLowerCase() === address.toLowerCase(),
-    );
-  const userClaimedValue = claimers.find(
-    (claimerItem: IRewardClaimer) =>
-      claimerItem.address.toLowerCase() === address?.toLowerCase(),
+  const isCreator = isAddressEqual(item?.creator, address);
+  const isInClaimers = ipfsClaimers.some((_row) =>
+    isAddressEqual(_row.address, address),
+  );
+  const isClaimable = !isClaimed && !isExpired && isInClaimers;
+  const userClaimedValue = claimers.find((claimerItem: IRewardClaimer) =>
+    isAddressEqual(claimerItem.address, address),
   )?.claimedValueParsed;
 
   return {
@@ -258,6 +267,7 @@ export function processRedpacketItem(
     hashLock,
     isClaimed,
     isExpired,
+    isInClaimers,
     allClaimed,
     claimedNumber,
     isRefunded,

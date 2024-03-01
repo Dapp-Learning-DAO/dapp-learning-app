@@ -20,11 +20,13 @@ const ApproveBtn = forwardRef(
       exceptedAllowance,
       onApprovalChange,
       onError,
+      autoHidden,
     }: {
       tokenAddr: `0x${string}` | undefined;
       exceptedAllowance: bigint;
       onApprovalChange?: (_v: boolean) => void;
       onError?: (_error: any) => void;
+      autoHidden?: boolean;
     },
     ref: any,
   ) => {
@@ -209,7 +211,10 @@ const ApproveBtn = forwardRef(
       <div className="w-full mb-4" ref={ref}>
         {isConnected ? (
           isApproved ? (
-            <button className="btn btn-block" disabled>
+            <button
+              className={`btn btn-block ${autoHidden && isApproved ? "hidden" : ""}`}
+              disabled
+            >
               Already Approved
             </button>
           ) : (

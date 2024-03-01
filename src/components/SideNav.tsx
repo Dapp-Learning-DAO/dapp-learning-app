@@ -15,7 +15,7 @@ const NAV_LINKS = [
   {
     name: "tools",
     navs: [
-      { name: "Home", link: "/" },
+      // { name: "Home", link: "/" },
       { name: "Reward", link: "/reward" },
     ],
   },
@@ -126,7 +126,7 @@ const SideNav = forwardRef((props, ref: any) => {
       </ul>
       <div className="flex justify-between">
         <ThemeSelector />
-        <LocalesSelector />
+        {/* <LocalesSelector /> */}
       </div>
     </nav>
   );

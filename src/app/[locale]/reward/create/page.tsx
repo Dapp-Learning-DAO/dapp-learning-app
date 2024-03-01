@@ -260,28 +260,27 @@ export default function CreateRedpacketPage() {
             />
             <AlertBox ref={alertBoxRef} />
             <div className="mb-4">
-              {!isConnected || !isApproved ? (
-                <ApproveBtn
-                  ref={approveBtnRef}
-                  tokenAddr={selectedTokenAddr as `0x${string}`}
-                  exceptedAllowance={exceptedAllowance}
-                  onApprovalChange={setIsApproved}
-                  onError={() => {
-                    showAlertMsg(alertBoxRef, "Approve faild.", "error");
-                  }}
-                />
-              ) : (
-                <button
-                  className="mb-4 btn btn-primary btn-block"
-                  disabled={submitClicked || submitDisabled || submitLoading}
-                  onClick={handleSubmit}
-                >
-                  {(submitClicked || submitLoading) && (
-                    <div className="loading loading-spinner loading-md inline-block mr-2"></div>
-                  )}
-                  {submitClicked || submitLoading ? "Loading" : "Submit"}
-                </button>
-              )}
+              <ApproveBtn
+                ref={approveBtnRef}
+                autoHidden
+                tokenAddr={selectedTokenAddr as `0x${string}`}
+                exceptedAllowance={exceptedAllowance}
+                onApprovalChange={setIsApproved}
+                onError={() => {
+                  showAlertMsg(alertBoxRef, "Approve faild.", "error");
+                }}
+              />
+
+              <button
+                className={`mb-4 btn btn-primary btn-block ${!isApproved ? "hidden" : ""}`}
+                disabled={submitClicked || submitDisabled || submitLoading}
+                onClick={handleSubmit}
+              >
+                {(submitClicked || submitLoading) && (
+                  <div className="loading loading-spinner loading-md inline-block mr-2"></div>
+                )}
+                {submitClicked || submitLoading ? "Loading" : "Submit"}
+              </button>
             </div>
           </div>
         </div>

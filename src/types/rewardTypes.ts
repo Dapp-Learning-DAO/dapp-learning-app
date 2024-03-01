@@ -7,6 +7,7 @@ export type IRewardClaimer = {
   tokenAddress: string | `0x${string}` | null;
   claimedValue: string | number;
   claimedValueParsed: number | null | undefined;
+  isMe?: boolean;
 };
 
 export type IRewardItem = {
@@ -24,6 +25,7 @@ export type IRewardItem = {
   ifrandom: boolean;
   isClaimed: boolean;
   isExpired: boolean;
+  isInClaimers: boolean;
   isRefunded: boolean;
   isCreator: boolean;
   isClaimable: boolean;

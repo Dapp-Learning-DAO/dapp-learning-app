@@ -68,7 +68,6 @@ export default function useTokensData({
         delete _decimals["ETH"];
         delete _symbols["ETH"];
       }
-      console.warn(_tokenOptions);
 
       setTokenOptions(_tokenOptions);
       setTokenSymbols(_symbols);

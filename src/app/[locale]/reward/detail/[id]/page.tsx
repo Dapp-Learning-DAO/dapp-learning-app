@@ -26,6 +26,7 @@ export default function RewardDetailPage({
   // trigger refetch graph data, when user interact with contract
   const handleTxSuccess = () => {
     emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 30 * 1000); // refetch during 30s
+    setCloseDisabled(false);
   };
 
   return (
