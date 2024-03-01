@@ -1,5 +1,5 @@
 "use client";
-import { forwardRef, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   useAccount,
   useSimulateContract,
@@ -7,32 +7,21 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import {
-  formatUnits,
-  isAddress,
-  keccak256,
-  parseEventLogs,
-  toBytes,
-} from "viem";
+import { formatUnits, isAddress, isAddressEqual, parseEventLogs } from "viem";
 import useRedpacketContract from "hooks/useRedpacketContract";
 import useSwitchNetwork from "hooks/useSwitchNetwork";
 import AlertBox, { showAlertMsg } from "components/AlertBox";
-import RedpacketZkTag from "app/reward/rewardComponents/RedpacketIcons/RedpacketZkTag";
-import RedPacketInfo from "app/reward/rewardComponents/RedpacketInfo";
 import { IRewardItem } from "types/rewardTypes";
 import { useRouter } from "next/navigation";
-import { XCircleIcon } from "@heroicons/react/24/outline";
 
 const RefundBtn = ({
   item,
   onSuccess,
   setCloseDisabled,
-  isModal,
 }: {
   item: IRewardItem;
   onSuccess: () => void;
   setCloseDisabled: (_disabled: boolean) => void;
-  isModal?: boolean | undefined;
 }) => {
   const { address, chain } = useAccount();
   const { switchChainAsync } = useSwitchChain();
@@ -55,16 +44,17 @@ const RefundBtn = ({
     functionName: "refund",
     args: [item ? item?.id : null],
     query: {
-      enabled:
+      enabled: !!(
         isNetworkCorrect() &&
-        !!item &&
-        !!item?.id &&
-        !!(item?.creator.toLowerCase() == address?.toLowerCase()) &&
-        !!item?.isExpired &&
+        item &&
+        item?.id &&
+        isAddressEqual(item?.creator, address as `0x${string}`) &&
+        item?.isExpired &&
         !item?.allClaimed &&
         !item?.isRefunded &&
-        !!redPacketContract &&
-        isAddress(redPacketContract?.address as string),
+        redPacketContract &&
+        isAddress(redPacketContract?.address as string)
+      ),
     },
   });
 
@@ -221,7 +211,7 @@ const RefundBtn = ({
     <>
       <AlertBox ref={alertBoxRef} />
       <div className={`mt-4 w-full`}>
-        {item?.isExpired && !item?.isRefunded && (
+        {item?.isExpired && !item?.allClaimed && !item?.isRefunded && (
           <button
             className="btn btn-primary w-full"
             onClick={(e: any) => {
