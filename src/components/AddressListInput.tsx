@@ -159,7 +159,7 @@ const AddressListInput = forwardRef(
             >
               multiple input
             </a>
-            <a
+            {/* <a
               role="tab"
               className={`tab  ${
                 mode == 2 ? "text-base-content" : "text-slate-500"
@@ -167,7 +167,7 @@ const AddressListInput = forwardRef(
               onClick={() => setMode(2)}
             >
               import file
-            </a>
+            </a> */}
           </div>
           <div className="text-slate-500 text-sm">
             total <span className="font-bold">{addresses.size}</span>

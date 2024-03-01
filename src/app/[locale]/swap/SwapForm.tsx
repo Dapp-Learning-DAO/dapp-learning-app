@@ -1,9 +1,7 @@
 "use client";
 import TokenSelector from "components/TokenSelector";
 import { ElementRef, useEffect, useRef, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { useDebounce } from "react-use";
-import useTokenAmountInput from "hooks/useTokenAmountInput";
 import { ArrowDownIcon } from "@heroicons/react/24/outline";
 import { Token } from "config/tokens";
 import { useSwapContext, useSwapStateContext } from "context/swap/SwapContext";
@@ -57,13 +55,13 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
   const disabled = false; // @todo
 
   return (
-    <form>
+    <div>
       <div className="relative">
         <div className={`relative w-full bg-slate-100 rounded-xl`}>
-          <div className="flex">
+          <div className="flex justify-between">
             <div className="text-slate-500 text-sm pt-3 px-4">You pay</div>
             <div
-              className="text-right pr-4 pb-2 cursor-pointer text-slate-500"
+              className="text-right pr-4 pt-2 pb-2 cursor-pointer text-slate-500"
               style={{ fontSize: 12, height: 46 }}
             >
               Balance:
@@ -160,6 +158,8 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
       {inputError}
       {JSON.stringify(swapState)}
       {JSON.stringify(currencies)}
-    </form>
+      {currencyBalances.INPUT?.toString()}
+      {currencyBalances.OUTPUT?.toString()}
+    </div>
   );
 }

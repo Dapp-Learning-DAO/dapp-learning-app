@@ -7,7 +7,7 @@ import { ZeroXPriceRequestParams, ZeroXPriceResponse } from "api/zerox/types";
 import { ITokenConf } from "types/tokenTypes";
 import { useAccount } from "wagmi";
 import SwapForm, { ISwapInputFormData } from "./SwapForm";
-import { useSwapStateContext } from "context/swap/SwapContext";
+import { useSwapContext, useSwapStateContext } from "context/swap/SwapContext";
 
 // @todo
 const AFFILIATE_FEE = 0.0; // Percentage of the buyAmount that should be attributed to feeRecipient as affiliate fees
@@ -31,6 +31,9 @@ export const fetcher = ([endpoint, params]: [
 export default function PriceView() {
   const { address } = useAccount();
   const { price, setPrice, finalize, setFinalize } = useSwapStateContext();
+  const {
+    derivedSwapInfo: { inputError },
+  } = useSwapContext();
 
   const [formData, setFormData] = useState<ISwapInputFormData>({
     sellAmount: 0n,
@@ -83,6 +86,13 @@ export default function PriceView() {
     <div className="m-auto max-w-md">
       <div className="text-xl py-4 text-center">Swap</div>
       <SwapForm onChange={setFormData} />
+      {inputError ? (
+        <button className="btn btn-disabled btn-block" disabled>
+          {inputError}
+        </button>
+      ) : (
+        <button className="btn btn-primary btn-block">Swap</button>
+      )}
     </div>
   );
 }

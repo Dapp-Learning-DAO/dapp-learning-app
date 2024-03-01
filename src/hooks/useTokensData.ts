@@ -14,9 +14,13 @@ import { useCustomEvent } from "./useCustomEvent";
 
 export type IuseTokensDataProps = {
   watchTokens?: Set<`0x${string}`>;
+  showETH?: boolean;
 };
 
-export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
+export default function useTokensData({
+  watchTokens,
+  showETH,
+}: IuseTokensDataProps) {
   const { address } = useAccount();
   const chainId = useChainId();
   const [readArgs, setReadArgs] = useState<any[]>([]);
@@ -41,8 +45,8 @@ export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
     (_data: any) => {
       if (!chainId) return;
       let _tokenOptions: IChainTokenConfs = {};
-      let _decimals: { [key: `0x${string}`]: number } = {};
-      let _symbols: { [key: `0x${string}`]: string } = {};
+      let _decimals: { [key: string]: number } = {};
+      let _symbols: { [key: string]: string } = {};
       if (DefaultTokenDecimals[chainId] && DefaultTokenDecimals[chainId]) {
         _tokenOptions = { ...DefaultTokenConf[chainId] };
         _symbols = { ...DefaultTokenSymbols[chainId] };
@@ -52,12 +56,19 @@ export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
       let _tokenConfs = localCustomTokens.getTokensByChainId(chainId);
       if (_tokenConfs) {
         for (let _token of Object.values(_tokenConfs)) {
-          const _key = _token.symbol as `0x${string}`;
+          const _key = _token.symbol as string;
           _tokenOptions[_key] = new Token({ ..._token });
           _decimals[_key] = _token.decimals;
           _symbols[_key] = _token.symbol;
         }
       }
+
+      if (!showETH) {
+        delete _tokenOptions["ETH"];
+        delete _decimals["ETH"];
+        delete _symbols["ETH"];
+      }
+      console.warn(_tokenOptions);
 
       setTokenOptions(_tokenOptions);
       setTokenSymbols(_symbols);

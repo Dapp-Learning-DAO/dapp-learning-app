@@ -33,6 +33,7 @@ const TokenSelector = forwardRef(
       disabled,
       small,
       autoSelect = true,
+      showETH = false,
       ...rest
     }: {
       curToken: Token | undefined;
@@ -40,6 +41,7 @@ const TokenSelector = forwardRef(
       disabled: boolean;
       small?: boolean;
       autoSelect?: boolean | undefined;
+      showETH?: boolean | undefined;
     },
     ref: any,
   ) => {
@@ -49,7 +51,7 @@ const TokenSelector = forwardRef(
 
     const chainId = useChainId();
     const modalRef = useRef<ElementRef<"dialog">>(null);
-    const { tokenOptions } = useTokensData({});
+    const { tokenOptions } = useTokensData({ showETH });
 
     const { data: readRes, isLoading } = useReadContracts({
       allowFailure: false,
