@@ -5,7 +5,7 @@ import { ChangeEvent, useState } from "react";
 import { Address, formatUnits, parseUnits } from "viem";
 import { ZeroXPriceRequestParams, ZeroXPriceResponse } from "api/zerox/types";
 import { ITokenConf } from "types/tokenTypes";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import SwapForm, { ISwapInputFormData } from "./SwapForm";
 import { useSwapContext, useSwapStateContext } from "context/swap/SwapContext";
 
@@ -18,8 +18,9 @@ export const fetcher = ([endpoint, params]: [
   ZeroXPriceRequestParams,
 ]) => {
   if (!endpoint) return;
-  let { takerAddress, sellToken, sellAmount, buyToken, buyAmount } = params;
-  if (!takerAddress || !sellToken || !buyToken) return;
+  let { chainId, takerAddress, sellToken, sellAmount, buyToken, buyAmount } =
+    params;
+  if (!chainId || !takerAddress || !sellToken || !buyToken) return;
   if (!sellAmount && !buyAmount) return;
   if (sellAmount == "0" || buyAmount == "0") return;
 
@@ -30,34 +31,22 @@ export const fetcher = ([endpoint, params]: [
 
 export default function PriceView() {
   const { address } = useAccount();
+  const chainId = useChainId();
   const { price, setPrice, finalize, setFinalize } = useSwapStateContext();
   const {
-    derivedSwapInfo: { inputError },
+    derivedSwapInfo: { isExactIn, currencies, parsedAmount, inputError },
   } = useSwapContext();
 
-  const [formData, setFormData] = useState<ISwapInputFormData>({
-    sellAmount: 0n,
-    buyAmount: 0n,
-    tradeDirection: "sell",
-    sellToken: undefined,
-    buyToken: undefined,
-  });
-  const { sellAmount, buyAmount, tradeDirection, sellToken, buyToken } =
-    formData;
-
   // fetch price here
-
-  const sellTokenDecimals = sellToken && sellToken.decimals;
-  const buyTokenDecimals = buyToken && buyToken.decimals;
-
   const { isLoading: isLoadingPrice } = useSWR(
     [
       "/api/zerox/price",
       {
-        sellToken: sellToken ? sellToken.address : "",
-        buyToken: buyToken ? buyToken.address : "",
-        sellAmount: sellAmount.toString(),
-        buyAmount: buyAmount.toString(),
+        chainId,
+        sellToken: currencies.INPUT ? currencies.INPUT.address : "",
+        buyToken: currencies.OUTPUT ? currencies.OUTPUT.address : "",
+        sellAmount: isExactIn && parsedAmount ? parsedAmount.toString() : "",
+        buyAmount: !isExactIn && parsedAmount ? parsedAmount.toString() : "",
         takerAddress: address,
         // feeRecipient: FEE_RECIPIENT,
         buyTokenPercentageFee: AFFILIATE_FEE,
@@ -69,23 +58,12 @@ export default function PriceView() {
         setPrice(data);
         console.log(`0x /api/price`, data);
         // @todo
-        if (tradeDirection === "sell") {
-          if (buyTokenDecimals) {
-            // setBuyAmount(formatUnits(data.buyAmount, buyTokenDecimals));
-          }
-        } else {
-          if (sellTokenDecimals) {
-            // setSellAmount(formatUnits(data.sellAmount, sellTokenDecimals));
-          }
-        }
       },
     },
   );
 
   return (
-    <div className="m-auto max-w-md">
-      <div className="text-xl py-4 text-center">Swap</div>
-      <SwapForm onChange={setFormData} />
+    <>
       {inputError ? (
         <button className="btn btn-disabled btn-block" disabled>
           {inputError}
@@ -93,6 +71,6 @@ export default function PriceView() {
       ) : (
         <button className="btn btn-primary btn-block">Swap</button>
       )}
-    </div>
+    </>
   );
 }

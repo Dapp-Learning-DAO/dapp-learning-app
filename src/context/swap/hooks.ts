@@ -16,6 +16,7 @@ export enum TradeState {
 }
 
 export type SwapInfo = {
+  isExactIn: boolean;
   currencies: { [field in Field]?: Token };
   currencyBalances: { [field in Field]?: bigint };
   outputFeeFiatValue?: number;
@@ -115,11 +116,12 @@ export function useDerivedSwapInfo({
 
   return useMemo(
     () => ({
+      isExactIn,
       currencies,
       currencyBalances,
       parsedAmount,
       inputError,
     }),
-    [currencies, currencyBalances, inputError, parsedAmount],
+    [isExactIn, currencies, currencyBalances, inputError, parsedAmount],
   );
 }

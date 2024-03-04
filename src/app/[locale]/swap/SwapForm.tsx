@@ -1,12 +1,13 @@
 "use client";
 import TokenSelector from "components/TokenSelector";
 import { ElementRef, useEffect, useRef, useState } from "react";
-import { useDebounce } from "react-use";
 import { ArrowDownIcon } from "@heroicons/react/24/outline";
 import { Token } from "config/tokens";
 import { useSwapContext, useSwapStateContext } from "context/swap/SwapContext";
-import { formatUnits, parseUnits } from "viem";
+import { formatUnits, isAddressEqual } from "viem";
 import { Field } from "context/swap/constants";
+import { ETH_TOKEN_ADDRESS } from "config/constants";
+import useRouteParams from "hooks/useRouteParams";
 
 export interface ISwapForm {
   tokenAmountIn: string | number;
@@ -21,14 +22,10 @@ export type ISwapInputFormData = {
   buyToken: undefined | Token;
 };
 
-export interface ISwapFormProps {
-  onChange: (_data: ISwapInputFormData) => void;
-}
-
-export default function SwapForm({ onChange }: ISwapFormProps) {
+export default function SwapForm() {
   const [sellToken, setSellToken] = useState<Token | undefined>();
   const [buyToken, setBuyToken] = useState<Token | undefined>();
-  const [changeCount, setChangeCount] = useState(0);
+  const { setRouteParams, removeRouteParam } = useRouteParams();
 
   const inputTokenRef = useRef<ElementRef<"input">>(null);
   const outputTokenRef = useRef<ElementRef<"input">>(null);
@@ -42,10 +39,43 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
   const { currencyState, setCurrencyState } = useSwapStateContext();
 
   useEffect(() => {
+    if (sellToken && buyToken) {
+      if (
+        currencyState.inputCurrency &&
+        isAddressEqual(currencyState.inputCurrency?.address, sellToken.address)
+      ) {
+        if (isAddressEqual(sellToken.address, buyToken.address)) {
+          setSellToken(undefined);
+          removeRouteParam("inputCurrency");
+        }
+        // return;
+      }
+      if (
+        currencyState.outputCurrency &&
+        isAddressEqual(currencyState.outputCurrency?.address, buyToken.address)
+      ) {
+        if (isAddressEqual(sellToken.address, buyToken.address)) {
+          setBuyToken(undefined);
+          removeRouteParam("outputCurrency");
+        }
+        // return;
+      }
+    }
+
     setCurrencyState({
       inputCurrency: sellToken,
       outputCurrency: buyToken,
     });
+    let _params: any = {};
+    if (sellToken) {
+      _params.inputCurrency =
+        sellToken.address === ETH_TOKEN_ADDRESS ? "ETH" : sellToken.address;
+    }
+    if (buyToken) {
+      _params.outputCurrency =
+        buyToken.address === ETH_TOKEN_ADDRESS ? "ETH" : buyToken.address;
+    }
+    setRouteParams(_params, false, "");
   }, [sellToken, buyToken, setCurrencyState]);
 
   const maxBalance =
@@ -99,16 +129,18 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
               placeholder="0"
               onChange={(e) => {
                 const value = e.target.value;
-                setSwapState((prevState) => ({
+                setSwapState({
                   independentField: Field.INPUT,
                   typedValue: value,
-                }));
+                });
               }}
             />
             <TokenSelector
+              small
+              autoSelect
+              showETH
               curToken={sellToken}
               setCurToken={setSellToken}
-              small
               disabled={disabled}
             />
           </div>
@@ -139,27 +171,24 @@ export default function SwapForm({ onChange }: ISwapFormProps) {
               placeholder="0"
               onChange={(e) => {
                 const value = e.target.value;
-                setSwapState((prevState) => ({
+                setSwapState({
                   independentField: Field.OUTPUT,
                   typedValue: value,
-                }));
+                });
               }}
             />
             <TokenSelector
+              autoSelect={false}
+              small
+              showETH
               curToken={buyToken}
               setCurToken={setBuyToken}
-              small
               disabled={disabled}
             />
           </div>
           <div style={{ height: 46 }}></div>
         </div>
       </div>
-      {inputError}
-      {JSON.stringify(swapState)}
-      {JSON.stringify(currencies)}
-      {currencyBalances.INPUT?.toString()}
-      {currencyBalances.OUTPUT?.toString()}
     </div>
   );
 }

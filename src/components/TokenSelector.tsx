@@ -32,7 +32,7 @@ const TokenSelector = forwardRef(
       setCurToken,
       disabled,
       small,
-      autoSelect = true,
+      autoSelect = false,
       showETH = false,
       ...rest
     }: {
@@ -154,21 +154,23 @@ const TokenSelector = forwardRef(
 
     useDebounce(
       () => {
-        if (!autoSelect || searchValue) return;
-        if (
-          curToken &&
-          tokenOptions[curToken.symbol] &&
-          curToken.equals(tokenOptions[curToken.symbol])
-        ) {
-          return;
-        }
         const opts = Object.values(tokenOptions);
-        if (opts.length > 0) {
-          handleTokenSelect(opts[0]);
+        if (!curToken) {
+          if (autoSelect) {
+            if (opts.length > 0) {
+              handleTokenSelect(opts[0]);
+              return;
+            }
+          }
+        } else {
+          if (curToken.chainId !== chainId) {
+            handleTokenSelect(autoSelect ? opts[0] : undefined);
+            return;
+          }
         }
       },
       500,
-      [tokenOptions],
+      [chainId, tokenOptions],
     ); // eslint-disable-line
 
     useDebounce(
@@ -348,13 +350,22 @@ function TokenItem({
   return (
     <>
       {small ? (
-        <div className="flex items-center p-1 rounded-full border cursor-pointer max-w-28 hover:bg-slate-100">
-          <TokenAvatar size={size} chainId={chainId} tokenData={curToken} />
-          <div className="flex-1 ml-1">
-            <div className="font-bold">{curToken?.symbol}</div>
+        curToken ? (
+          <div className="flex items-center p-1 rounded-full border cursor-pointer max-w-28 hover:bg-slate-100">
+            <TokenAvatar size={size} chainId={chainId} tokenData={curToken} />
+            <div className="flex-1 mx-2">
+              <div className="font-bold">{curToken?.symbol}</div>
+            </div>
+            <ChevronDownIcon className="w-4 text-base stroke-2" />
           </div>
-          <ChevronDownIcon className="w-4 text-base stroke-2" />
-        </div>
+        ) : (
+          <div className="flex items-center p-1 rounded-full border cursor-pointer max-w-28 bg-primary">
+            <div className="flex-1 text-sm whitespace-nowrap px-1 text-white">
+              Select Token
+            </div>
+            <ChevronDownIcon className="w-4 text-base stroke-2 text-white" />
+          </div>
+        )
       ) : (
         <div className="flex items-center p-4 rounded-xl border cursor-pointer hover:bg-slate-100">
           <TokenAvatar size={size} chainId={chainId} tokenData={curToken} />

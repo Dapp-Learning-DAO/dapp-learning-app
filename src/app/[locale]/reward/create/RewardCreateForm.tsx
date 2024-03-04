@@ -460,6 +460,7 @@ const RewardCreateForm = forwardRef(
               {...register("tokenObj", {
                 required: true,
               })}
+              autoSelect
               curToken={tokenObj}
               setCurToken={setTokenObj}
               disabled={editDisabled}

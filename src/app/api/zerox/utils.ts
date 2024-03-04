@@ -1,4 +1,4 @@
-import { NextApiRequest } from "next";
+import { NextRequest } from "next/server";
 
 const API_DOMAIN_BY_CHAINID: { [chainId: number]: string } = {
   1: "https://api.0x.org", // Ethereum (Mainnet)
@@ -7,8 +7,9 @@ const API_DOMAIN_BY_CHAINID: { [chainId: number]: string } = {
   11155111: "https://sepolia.api.0x.org", // Ethereum (Sepolia)
 };
 
-export function getAPIDomain(req: NextApiRequest): string {
-  let { chainId } = req.query;
+export function getAPIDomain(req: NextRequest): string {
+  const searchParams = req.nextUrl.searchParams;
+  let chainId = searchParams.get("chainId");
   if (!chainId) return "";
   if (!API_DOMAIN_BY_CHAINID[Number(chainId)]) return "";
   return API_DOMAIN_BY_CHAINID[Number(chainId)];

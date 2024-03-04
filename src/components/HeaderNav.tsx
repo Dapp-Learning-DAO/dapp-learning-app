@@ -8,7 +8,6 @@ import { Bars3Icon } from "@heroicons/react/24/outline";
 import { BOTTOM_LINKS, NAV_LINKS } from "config/ui";
 import { usePathname } from "next/navigation";
 import useTheme from "hooks/useTheme";
-import { useMedia } from "react-use";
 
 const HeaderNav = forwardRef((props, ref: any) => {
   const pathname = usePathname();

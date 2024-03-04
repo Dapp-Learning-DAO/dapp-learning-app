@@ -27,7 +27,8 @@ const SideNav = forwardRef((props, ref: any) => {
         <Link href="/">
           <Image
             className="w-full"
-            src={`/images/nav-logo-${theme ? theme : "light"}.png`}
+            // src={`/images/nav-logo-${theme ? theme : "light"}.png`}
+            src={`${theme && theme === "dark" ? "/images/nav-logo-dark.svg" : "/images/nav-logo-light.png"}`}
             style={{ objectFit: "contain" }}
             width={784}
             height={192}

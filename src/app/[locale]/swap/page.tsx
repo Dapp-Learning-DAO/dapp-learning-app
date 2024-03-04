@@ -10,6 +10,7 @@ import {
 import { TokenConf } from "config/tokens";
 import { useParams } from "next/navigation";
 import QuoteView from "./QuoteView";
+import SwapForm from "./SwapForm";
 
 export default function SwapPage() {
   const { chainId } = useParams<{ chainId: string }>();
@@ -28,7 +29,13 @@ export default function SwapPage() {
       <SwapStateContext.Consumer>
         {({ finalize }) => (
           <SwapContextProvider>
-            {finalize == 0n ? <PriceView /> : <QuoteView />}
+            <div className="m-auto max-w-md">
+              <div className="text-xl py-4 text-center">Swap</div>
+              <div className="mb-8">
+                <SwapForm />
+              </div>
+              {finalize == 0n ? <PriceView /> : <QuoteView />}
+            </div>
           </SwapContextProvider>
         )}
       </SwapStateContext.Consumer>

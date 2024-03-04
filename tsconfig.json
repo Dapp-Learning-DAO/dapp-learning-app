@@ -29,7 +29,7 @@
       "gql/*": ["./src/gql/*"],
       "locales/*": ["./src/locales/*"],
       "provider/*": ["./src/provider/*"],
-      "api/*": ["./src/api/*"],
+      "api/*": ["./src/app/api/*"],
       "types/*": ["./src/types/*"],
       "src/*": ["./src/*"],
       "app/*": ["./src/app/[locale]/*"]

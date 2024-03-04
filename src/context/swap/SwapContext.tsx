@@ -77,6 +77,7 @@ const initialSwapState: SwapState = {
 };
 
 export const EMPTY_DERIVED_SWAP_INFO: SwapInfo = Object.freeze({
+  isExactIn: true,
   currencies: {},
   currencyBalances: {},
   autoSlippage: 0,

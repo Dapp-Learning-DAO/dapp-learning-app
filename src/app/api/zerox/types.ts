@@ -1,6 +1,7 @@
 import { Address } from "viem";
 
 export interface ZeroXPriceRequestParams {
+  chainId: number | undefined;
   sellToken: string;
   buyToken: string;
   buyAmount?: string;

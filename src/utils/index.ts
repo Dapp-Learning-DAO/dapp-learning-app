@@ -1,4 +1,5 @@
 "use client";
+import { ReadonlyURLSearchParams } from "next/navigation";
 import { isAddress } from "viem";
 
 export function shortAddress(str: string): string {
