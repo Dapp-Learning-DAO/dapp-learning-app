@@ -17,6 +17,7 @@ import { ETH_TOKEN_ADDRESS } from "config/constants";
 import useRouteParams from "hooks/useRouteParams";
 import { useDebounce } from "react-use";
 import { useChainId } from "wagmi";
+import { TradeState } from "context/swap/hooks";
 
 export interface ISwapForm {
   tokenAmountIn: string | number;
@@ -43,10 +44,19 @@ export default function SwapForm() {
   const {
     swapState,
     setSwapState,
-    derivedSwapInfo: { currencies, currencyBalances, inputError },
+    derivedSwapInfo: { currencies, currencyBalances, inputError, trade },
   } = useSwapContext();
 
-  const { currencyState, setCurrencyState, priceInfo } = useSwapStateContext();
+  const {
+    currencyState,
+    setCurrencyState,
+    priceInfo,
+    setPriceInfo,
+    finalize,
+    setFinalize,
+    txHash,
+    setTxHash,
+  } = useSwapStateContext();
 
   useEffect(() => {
     if (sellToken && buyToken) {
@@ -116,11 +126,20 @@ export default function SwapForm() {
       independentField: Field.INPUT,
       typedValue: "",
     });
-  }, [setSwapState]);
+    setPriceInfo(undefined);
+    setFinalize(undefined);
+    setTxHash(undefined);
+  }, [setSwapState, setPriceInfo, setFinalize, setTxHash]);
 
   useEffect(() => {
     reset();
   }, [chainId, reset]);
+
+  useEffect(() => {
+    if (trade.state === TradeState.COMPLETE) {
+      reset();
+    }
+  }, [trade, reset]);
 
   // const handleSwitchCurrencies = () => {
   //   // @todo
@@ -146,7 +165,7 @@ export default function SwapForm() {
     [currencyBalances, currencies],
   );
 
-  const disabled = false; // @todo
+  const disabled = trade.state !== TradeState.LOADING; // @todo
 
   return (
     <div>
@@ -174,8 +193,12 @@ export default function SwapForm() {
                         independentField: Field.INPUT,
                         typedValue: inputMaxBalance,
                       }));
-                      if ((inputTokenRef as any).current)
+                      if ((inputTokenRef as any).current) {
                         (inputTokenRef as any).current.value = inputMaxBalance;
+                      }
+                      if ((outputTokenRef as any).current) {
+                        (outputTokenRef as any).current.value = "";
+                      }
                     }}
                   >
                     Max
@@ -206,6 +229,9 @@ export default function SwapForm() {
                   independentField: Field.INPUT,
                   typedValue: value,
                 });
+                if ((outputTokenRef as any).current) {
+                  (outputTokenRef as any).current.value = "";
+                }
               }}
             />
             <TokenSelector
@@ -276,14 +302,14 @@ export default function SwapForm() {
                 outline: "none",
               }}
               type="text"
-              disabled={disabled}
+              disabled
               placeholder="0"
               onChange={(e) => {
-                const value = e.target.value;
-                setSwapState({
-                  independentField: Field.OUTPUT,
-                  typedValue: value,
-                });
+                // const value = e.target.value;
+                // setSwapState({
+                //   independentField: Field.OUTPUT,
+                //   typedValue: value,
+                // });
               }}
             />
             <TokenSelector

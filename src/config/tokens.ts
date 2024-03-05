@@ -187,6 +187,20 @@ export let TokenConf: ITokenConfs = {
       symbol: "TST",
       name: "Test Token",
     }),
+    WETH: new Token({
+      chainId: SupportedChainId.SEPOLIA,
+      address: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
+      decimals: 18,
+      symbol: "WETH",
+      name: "Wraped ETH",
+    }),
+    UNI: new Token({
+      chainId: SupportedChainId.SEPOLIA,
+      address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+      decimals: 18,
+      symbol: "UNI",
+      name: "Uniswap",
+    }),
     // TST2 0xfFEe51237C25303798d098735C25c1F9A91a6e18
   },
 };

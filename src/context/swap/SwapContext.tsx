@@ -14,7 +14,7 @@ import { Token } from "config/tokens";
 import { SupportedChainId } from "config/chains";
 import { useChainId } from "wagmi";
 import { usePrevious } from "react-use";
-import { ZeroXPriceResponse } from "api/zerox/types";
+import { ZeroXPriceResponse, ZeroXQuoteResponse } from "api/zerox/types";
 
 export interface SwapState {
   readonly independentField: Field;
@@ -41,8 +41,10 @@ type SwapStateContextType = {
   setCurrencyState: Dispatch<SetStateAction<CurrencyState>>;
   priceInfo: ZeroXPriceResponse | undefined;
   setPriceInfo: Dispatch<SetStateAction<ZeroXPriceResponse | undefined>>;
-  finalize: bigint;
-  setFinalize: Dispatch<SetStateAction<bigint>>;
+  finalize: ZeroXQuoteResponse | undefined;
+  setFinalize: Dispatch<SetStateAction<ZeroXQuoteResponse | undefined>>;
+  txHash: `0x${string}` | undefined;
+  setTxHash: Dispatch<SetStateAction<`0x${string}` | undefined>>;
   // currentTab: SwapTab
   // setCurrentTab: Dispatch<SetStateAction<SwapTab>>
 
@@ -64,8 +66,10 @@ export const SwapStateContext = createContext<SwapStateContextType>({
   chainId: SupportedChainId.OPTIMISM,
   priceInfo: undefined,
   setPriceInfo: () => undefined,
-  finalize: 0n,
+  finalize: undefined,
   setFinalize: () => undefined,
+  txHash: undefined,
+  setTxHash: () => undefined,
 
   // currentTab: SwapTab.Swap,
   // setCurrentTab: () => undefined,
@@ -114,7 +118,8 @@ export function SwapStateContextProvider({
   const connectedChainId = useChainId();
   // const [currentTab, setCurrentTab] = useState<SwapTab>(SwapTab.Swap)
   const [priceInfo, setPriceInfo] = useState<ZeroXPriceResponse | undefined>();
-  const [finalize, setFinalize] = useState<bigint>(0n);
+  const [finalize, setFinalize] = useState<ZeroXQuoteResponse | undefined>();
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
   const [currencyState, setCurrencyState] = useState<CurrencyState>({
     inputCurrency: initialInputCurrency,
     outputCurrency: initialOutputCurrency,
@@ -175,6 +180,8 @@ export function SwapStateContextProvider({
         setPriceInfo,
         finalize,
         setFinalize,
+        txHash,
+        setTxHash,
       }}
     >
       {children}

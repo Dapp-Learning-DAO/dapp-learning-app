@@ -27,17 +27,21 @@ export default function SwapPage() {
       initialOutputCurrency={initialOutputCurrency}
     >
       <SwapStateContext.Consumer>
-        {({ finalize }) => (
-          <SwapContextProvider>
-            <div className="m-auto max-w-md">
-              <div className="text-xl py-4 text-center">Swap</div>
-              <div className="mb-1">
-                <SwapForm />
+        {({ finalize }) => {
+          return (
+            <SwapContextProvider>
+              <div className="m-auto max-w-md">
+                <div className="text-xl py-4 text-center">
+                  {!finalize ? "Swap" : "Confirm Swap"}
+                </div>
+                <div className="mb-1">
+                  <SwapForm />
+                </div>
+                {!finalize ? <PriceView /> : <QuoteView />}
               </div>
-              {finalize == 0n ? <PriceView /> : <QuoteView />}
-            </div>
-          </SwapContextProvider>
-        )}
+            </SwapContextProvider>
+          );
+        }}
       </SwapStateContext.Consumer>
     </SwapStateContextProvider>
   );

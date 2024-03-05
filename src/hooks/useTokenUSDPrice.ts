@@ -39,6 +39,7 @@ export default function useTokenUSDPrice({
     ],
     fetcher,
     {
+      refreshInterval: 10000,
       onSuccess: (data: TokenUSDPricesResponse) => {
         if (data) {
           setPrices(data);

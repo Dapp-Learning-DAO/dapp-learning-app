@@ -265,6 +265,9 @@ export default function CreateRedpacketPage() {
                 ref={approveBtnRef}
                 // autoHidden
                 tokenAddr={selectedTokenAddr as `0x${string}`}
+                targetAddr={
+                  redPacketContract ? redPacketContract?.address : undefined
+                }
                 exceptedAllowance={exceptedAllowance}
                 onApprovalChange={setIsApproved}
                 onError={() => {

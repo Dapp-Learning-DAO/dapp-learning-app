@@ -21,7 +21,6 @@ export async function GET(req: NextRequest) {
   for (let [key, value] of req.nextUrl.searchParams.entries()) {
     if (key === "chainId") continue;
     if (!value) continue;
-    console.log(key, value);
     query.push(`${key}=${value}`);
   }
 

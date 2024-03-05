@@ -10,19 +10,20 @@ import {
 } from "wagmi";
 import { erc20Abi, isAddress } from "viem";
 import { useDebounce } from "react-use";
-import useRedpacketContract from "hooks/useRedpacketContract";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const ApproveBtn = forwardRef(
   (
     {
       tokenAddr,
+      targetAddr,
       exceptedAllowance,
       onApprovalChange,
       onError,
       autoHidden,
     }: {
       tokenAddr: `0x${string}` | undefined;
+      targetAddr: `0x${string}` | undefined;
       exceptedAllowance: bigint;
       onApprovalChange?: (_v: boolean) => void;
       onError?: (_error: any) => void;
@@ -37,8 +38,6 @@ const ApproveBtn = forwardRef(
     const [approveIsLoading, setApproveIsLoading] = useState(false);
     const [approveDisabled, setApproveDisabled] = useState(true);
 
-    const redPacketContract = useRedpacketContract();
-
     const {
       data: allowanceRes,
       refetch: queryAllowance,
@@ -48,10 +47,7 @@ const ApproveBtn = forwardRef(
       address: tokenAddr,
       abi: erc20Abi,
       functionName: "allowance",
-      args: [
-        address as `0x${string}`,
-        redPacketContract?.address as `0x${string}`,
-      ],
+      args: [address as `0x${string}`, targetAddr as `0x${string}`],
       query: {
         enabled: false,
       },
@@ -60,14 +56,14 @@ const ApproveBtn = forwardRef(
     useDebounce(
       async () => {
         if (tokenAddr && isAddress(tokenAddr)) {
-          if (address && redPacketContract && !!redPacketContract?.address) {
+          if (address && targetAddr) {
             await queryAllowance();
             setQueriedTokenAddr(tokenAddr);
           }
         }
       },
       500,
-      [tokenAddr, address, redPacketContract],
+      [tokenAddr, address, targetAddr],
     );
 
     useEffect(() => {
@@ -114,14 +110,13 @@ const ApproveBtn = forwardRef(
       address: tokenAddr,
       abi: erc20Abi,
       functionName: "approve",
-      args: [redPacketContract?.address as `0x${string}`, exceptedAllowance],
+      args: [targetAddr as `0x${string}`, exceptedAllowance],
       query: {
         enabled:
           !!tokenAddr &&
           typeof allowanceRes !== "undefined" &&
           !isApproved &&
-          !!redPacketContract &&
-          !!redPacketContract?.address &&
+          targetAddr &&
           exceptedAllowance > 0n,
       },
     });

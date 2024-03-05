@@ -1,17 +1,21 @@
 import { ITokenConf } from "types/tokenTypes";
 import { Field } from "./constants";
-import { ReactNode, useMemo } from "react";
-import { useAccount } from "wagmi";
+import { ReactNode, useEffect, useMemo } from "react";
+import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { SwapState, useSwapStateContext } from "./SwapContext";
 import useTokenBalanceOf from "hooks/useTokenBalanceOf";
 import { formatUnits, parseUnits } from "viem";
 import { Token } from "config/tokens";
+import useTokenUSDPrice from "hooks/useTokenUSDPrice";
 
 export enum TradeState {
-  LOADING = "loading",
+  LOADING = "loading", // quering price
+  PRICED = "priced", // get price result
+  QUOTED = "quoted", // get quote result
+  PENDING = "pending", // pending swap
+  COMPLETE = "complete", // complete swap
   INVALID = "invalid",
   STALE = "stale",
-  NO_ROUTE_FOUND = "no_route_found",
   VALID = "valid",
 }
 
@@ -22,14 +26,13 @@ export type SwapInfo = {
   outputFeeFiatValue?: number;
   parsedAmount?: bigint;
   inputError?: ReactNode;
-  // trade: {
-  //   // trade?: InterfaceTrade;
-  //   state: TradeState;
-  //   estimateETH?: number;
-  //   estimateUSD?: number;
-  //   error?: any;
-  //   swapQuoteLatency?: number;
-  // };
+  trade: {
+    state: TradeState;
+    estimateETH?: number;
+    estimateUSD?: number;
+    error?: any;
+    swapQuoteLatency?: number;
+  };
   // allowedSlippage: number;
   // autoSlippage: number;
 };
@@ -42,6 +45,12 @@ export function useDerivedSwapInfo({
   const { address, isConnected } = useAccount();
 
   const {
+    priceInfo,
+    setPriceInfo,
+    finalize,
+    setFinalize,
+    txHash,
+    setTxHash,
     currencyState: { inputCurrency, outputCurrency },
   } = useSwapStateContext();
 
@@ -113,6 +122,59 @@ export function useDerivedSwapInfo({
     isConnected,
   ]);
 
+  const { prices: usdPrices } = useTokenUSDPrice({
+    tokenNames: ["ethereum"],
+  });
+
+  const {
+    data: txRes,
+    isError: txIsError,
+    isLoading: txIsLoading,
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+    confirmations: 5,
+  });
+
+  const trade = useMemo(() => {
+    let _trade = {
+      state: TradeState.LOADING,
+      estimateETH: 0,
+      estimateUSD: 0,
+      error: undefined,
+      swapQuoteLatency: 0,
+    };
+    if (priceInfo) {
+      _trade.state = TradeState.PRICED;
+      if (finalize) {
+        _trade.state = TradeState.QUOTED;
+      }
+    } else {
+      _trade.state = TradeState.LOADING;
+    }
+
+    if (txHash) {
+      _trade.state = TradeState.PENDING;
+      if (txRes) {
+        _trade.state = TradeState.COMPLETE;
+      }
+    }
+
+    if (priceInfo && priceInfo.estimatedGas && priceInfo.gasPrice) {
+      _trade.estimateETH = Number(
+        formatUnits(
+          BigInt(priceInfo.estimatedGas) * BigInt(priceInfo.gasPrice),
+          18,
+        ),
+      );
+    }
+
+    if (usdPrices && usdPrices.ethereum.usd) {
+      _trade.estimateUSD = usdPrices.ethereum.usd * Number(_trade.estimateETH);
+    }
+
+    return _trade;
+  }, [priceInfo, usdPrices, finalize, txHash, txRes]);
+
   return useMemo(
     () => ({
       isExactIn,
@@ -120,7 +182,8 @@ export function useDerivedSwapInfo({
       currencyBalances,
       parsedAmount,
       inputError,
+      trade,
     }),
-    [isExactIn, currencies, currencyBalances, inputError, parsedAmount],
+    [isExactIn, currencies, currencyBalances, inputError, parsedAmount, trade],
   );
 }
