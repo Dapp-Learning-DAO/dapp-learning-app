@@ -3,13 +3,9 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import qs from "qs";
 import { getAPIDomain } from "../utils";
-import { ZeroXPriceResponse } from "../types";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  // res: NextResponse<ZeroXPriceResponse | { error: string }>,
-) {
+export async function GET(req: NextRequest) {
   const apiDomain = getAPIDomain(req);
 
   if (!apiDomain) {

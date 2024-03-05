@@ -45,6 +45,18 @@ export function useDerivedSwapInfo({
     currencyState: { inputCurrency, outputCurrency },
   } = useSwapStateContext();
 
+  const isExactIn: boolean = independentField === Field.INPUT;
+  const parsedAmount = useMemo(() => {
+    if (typedValue) {
+      if (isExactIn && inputCurrency) {
+        return parseUnits(typedValue, inputCurrency.decimals);
+      } else if (!isExactIn && outputCurrency) {
+        return parseUnits(typedValue, outputCurrency.decimals);
+      }
+    }
+    return 0n;
+  }, [inputCurrency, isExactIn, outputCurrency, typedValue]);
+
   const { balanceOf: inputCurrencyBalance } = useTokenBalanceOf({
     tokenAddr: inputCurrency ? inputCurrency.address : undefined,
   });
@@ -58,18 +70,6 @@ export function useDerivedSwapInfo({
     }),
     [inputCurrencyBalance, outputCurrencyBalance],
   );
-
-  const isExactIn: boolean = independentField === Field.INPUT;
-  const parsedAmount = useMemo(() => {
-    if (typedValue) {
-      if (isExactIn && inputCurrency) {
-        return parseUnits(typedValue, inputCurrency.decimals);
-      } else if (!isExactIn && outputCurrency) {
-        return parseUnits(typedValue, outputCurrency.decimals);
-      }
-    }
-    return 0n;
-  }, [inputCurrency, isExactIn, outputCurrency, typedValue]);
 
   const currencies: { [field in Field]?: Token } = useMemo(
     () => ({
@@ -97,9 +97,8 @@ export function useDerivedSwapInfo({
     // compare input balance to max input based on version
 
     if (
-      currencyBalances[Field.INPUT] &&
-      inputCurrencyBalance &&
-      currencyBalances[Field.INPUT] > inputCurrencyBalance
+      typeof currencyBalances[Field.INPUT] === "bigint" &&
+      currencyBalances[Field.INPUT] < parsedAmount
     ) {
       inputError = `Insufficient ${inputCurrency ? inputCurrency.symbol : ""} balance`;
     }

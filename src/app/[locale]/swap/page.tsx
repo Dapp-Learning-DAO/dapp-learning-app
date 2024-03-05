@@ -31,7 +31,7 @@ export default function SwapPage() {
           <SwapContextProvider>
             <div className="m-auto max-w-md">
               <div className="text-xl py-4 text-center">Swap</div>
-              <div className="mb-8">
+              <div className="mb-1">
                 <SwapForm />
               </div>
               {finalize == 0n ? <PriceView /> : <QuoteView />}

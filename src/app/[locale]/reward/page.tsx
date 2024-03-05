@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import RedPacketItem from "./rewardComponents/RewardItem";
 import { useChainId } from "wagmi";
-import { setRouteParams } from "utils/index";
+import useRouteParams from "hooks/useRouteParams";
 
 const tabList = ["Claimable", "Claimed", "Expired", "Created"];
 
@@ -15,6 +15,8 @@ export default function RewardListPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { setRouteParams, removeRouteParam } = useRouteParams();
+
   const chainId = useChainId();
 
   const [curTab, setCurTab] = useState(0);
@@ -56,13 +58,7 @@ export default function RewardListPage() {
                 }`}
                 onClick={() => {
                   setCurTab(index);
-                  let url: string = setRouteParams(
-                    pathname,
-                    searchParams,
-                    "tab",
-                    `${index}`,
-                  );
-                  router.replace(url, { scroll: false });
+                  setRouteParams({ tab: `${index}` });
                 }}
               >
                 {item}

@@ -39,8 +39,8 @@ type SwapStateContextType = {
     outputCurrency?: Token;
   };
   setCurrencyState: Dispatch<SetStateAction<CurrencyState>>;
-  price: ZeroXPriceResponse | undefined;
-  setPrice: Dispatch<SetStateAction<ZeroXPriceResponse | undefined>>;
+  priceInfo: ZeroXPriceResponse | undefined;
+  setPriceInfo: Dispatch<SetStateAction<ZeroXPriceResponse | undefined>>;
   finalize: bigint;
   setFinalize: Dispatch<SetStateAction<bigint>>;
   // currentTab: SwapTab
@@ -62,8 +62,8 @@ export const SwapStateContext = createContext<SwapStateContextType>({
     outputCurrency: undefined,
   },
   chainId: SupportedChainId.OPTIMISM,
-  price: undefined,
-  setPrice: () => undefined,
+  priceInfo: undefined,
+  setPriceInfo: () => undefined,
   finalize: 0n,
   setFinalize: () => undefined,
 
@@ -113,7 +113,7 @@ export function SwapStateContextProvider({
 }>) {
   const connectedChainId = useChainId();
   // const [currentTab, setCurrentTab] = useState<SwapTab>(SwapTab.Swap)
-  const [price, setPrice] = useState<ZeroXPriceResponse | undefined>();
+  const [priceInfo, setPriceInfo] = useState<ZeroXPriceResponse | undefined>();
   const [finalize, setFinalize] = useState<bigint>(0n);
   const [currencyState, setCurrencyState] = useState<CurrencyState>({
     inputCurrency: initialInputCurrency,
@@ -171,8 +171,8 @@ export function SwapStateContextProvider({
         setCurrencyState,
         prefilledState,
         chainId,
-        price,
-        setPrice,
+        priceInfo,
+        setPriceInfo,
         finalize,
         setFinalize,
       }}
