@@ -21,12 +21,10 @@ export default function ClaimBtn({
   item,
   onSuccess,
   setCloseDisabled,
-  isModal,
 }: {
   item: IRewardItem;
   onSuccess: () => void;
   setCloseDisabled: (_disabled: boolean) => void;
-  isModal?: boolean | undefined;
 }) {
   const { address } = useAccount();
   const chainId = useChainId();

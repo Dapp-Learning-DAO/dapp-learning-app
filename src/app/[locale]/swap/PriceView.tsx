@@ -123,6 +123,8 @@ export default function PriceView() {
     [currencies.INPUT],
   );
 
+  const isLoading = isLoadingPrice || qouting;
+
   return (
     <>
       <div className="bg-base-200 rounded-xl p-4 mb-8">
@@ -182,13 +184,13 @@ export default function PriceView() {
           )}
           <button
             className="btn btn-primary btn-block"
-            disabled={(!isETHin && !isApproved) || isLoadingPrice}
+            disabled={(!isETHin && !isApproved) || isLoading}
             onClick={handleQuote}
           >
-            {isLoadingPrice && (
+            {isLoading && (
               <div className="loading loading-spinner loading-md inline-block mr-2"></div>
             )}
-            {isLoadingPrice ? "Loading..." : "Swap"}
+            {isLoading ? "Loading..." : "Swap"}
           </button>
         </>
       )}

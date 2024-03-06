@@ -85,7 +85,6 @@ export default function RewardDetailPage({
               item={item}
               onSuccess={handleTxSuccess}
               setCloseDisabled={setCloseDisabled}
-              isModal={isModal}
             />
           )}
           {item.isCreator && (
@@ -93,7 +92,6 @@ export default function RewardDetailPage({
               item={item}
               onSuccess={handleTxSuccess}
               setCloseDisabled={setCloseDisabled}
-              isModal={isModal}
             />
           )}
         </div>

@@ -3,8 +3,8 @@
 import SideNav from "components/SideNav";
 import Footer from "components/Footer";
 import HeaderNav from "./HeaderNav";
-import { useRef, useState } from "react";
-import { useDebounce, useMedia, useWindowSize } from "react-use";
+import { useRef } from "react";
+import { useMedia } from "react-use";
 
 export default function AppContainer({
   children,
