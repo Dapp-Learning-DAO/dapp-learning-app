@@ -27,7 +27,6 @@ export const pinJSONToIPFS = async ({
 
 export const readJSONfromIPFS = async (cid: string) => {
   return fetch(
-    `https://${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${cid}`
+    `https://${process.env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${cid}`,
   ).then((response) => response.json());
 };
-

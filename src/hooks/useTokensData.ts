@@ -2,6 +2,8 @@ import {
   TokensDecimals as DefaultTokenDecimals,
   TokensSymbols as DefaultTokenSymbols,
   TokenConf as DefaultTokenConf,
+  Token,
+  IChainTokenConfs,
 } from "config/tokens";
 import { LOCAL_CUSTOM_TOKENS_EVENT, localCustomTokens } from "context/utils";
 import { useEffect, useState } from "react";
@@ -9,20 +11,23 @@ import { useDebounce } from "react-use";
 import { erc20Abi, formatUnits, isAddress } from "viem";
 import { useAccount, useChainId, useReadContracts } from "wagmi";
 import { useCustomEvent } from "./useCustomEvent";
-import { IChainTokenConfs, ITokenConf } from "types/tokenTypes";
 
 export type IuseTokensDataProps = {
   watchTokens?: Set<`0x${string}`>;
+  showETH?: boolean;
 };
 
-export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
+export default function useTokensData({
+  watchTokens,
+  showETH,
+}: IuseTokensDataProps) {
   const { address } = useAccount();
   const chainId = useChainId();
   const [readArgs, setReadArgs] = useState<any[]>([]);
   const [updateCount, setUpdateCount] = useState(0);
   const [tokenOptions, setTokenOptions] = useState<IChainTokenConfs>({});
   const [tokenData, setTokenData] = useState<{
-    [key: `0x${string}`]: ITokenConf;
+    [key: `0x${string}`]: Token;
   }>({});
   const [tokenSymbols, setTokenSymbols] = useState<{
     [key: `0x${string}`]: string;
@@ -40,8 +45,8 @@ export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
     (_data: any) => {
       if (!chainId) return;
       let _tokenOptions: IChainTokenConfs = {};
-      let _decimals: { [key: `0x${string}`]: number } = {};
-      let _symbols: { [key: `0x${string}`]: string } = {};
+      let _decimals: { [key: string]: number } = {};
+      let _symbols: { [key: string]: string } = {};
       if (DefaultTokenDecimals[chainId] && DefaultTokenDecimals[chainId]) {
         _tokenOptions = { ...DefaultTokenConf[chainId] };
         _symbols = { ...DefaultTokenSymbols[chainId] };
@@ -51,11 +56,17 @@ export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
       let _tokenConfs = localCustomTokens.getTokensByChainId(chainId);
       if (_tokenConfs) {
         for (let _token of Object.values(_tokenConfs)) {
-          const _key = _token.symbol as `0x${string}`;
-          _tokenOptions[_key] = _token;
+          const _key = _token.symbol as string;
+          _tokenOptions[_key] = new Token({ ..._token });
           _decimals[_key] = _token.decimals;
           _symbols[_key] = _token.symbol;
         }
+      }
+
+      if (!showETH) {
+        delete _tokenOptions["ETH"];
+        delete _decimals["ETH"];
+        delete _symbols["ETH"];
       }
 
       setTokenOptions(_tokenOptions);
@@ -63,7 +74,7 @@ export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
       setTokenDecimals(_decimals);
     },
     200,
-    [chainId, updateCount]
+    [chainId, updateCount],
   );
 
   const {
@@ -86,14 +97,15 @@ export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
 
     for (let _token of watchTokens) {
       if (isAddress(_token)) {
-        _tokenData[_token] = {
+        _tokenData[_token] = new Token({
+          chainId: chainId,
           address: _token,
           symbol: "",
           decimals: 0,
           name: "",
           balanceOf: 0n,
           balanceOfParsed: 0,
-        };
+        });
         args.push({
           address: _token,
           abi: erc20Abi,
@@ -137,7 +149,8 @@ export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
             ptr++;
             continue;
           }
-          const _tokenDataRes: ITokenConf = {
+          const _tokenDataRes: Token = new Token({
+            chainId,
             address: _token,
             symbol: symbol as string,
             decimals,
@@ -146,7 +159,7 @@ export default function useTokensData({ watchTokens }: IuseTokensDataProps) {
             balanceOfParsed: balanceOf
               ? Number(formatUnits(balanceOf as bigint, decimals).toString())
               : 0,
-          };
+          });
           _tokenData[_token] = _tokenDataRes;
           _tokenDecimals[_token] = decimals;
           _tokenSymbols[_token] = symbol as string;

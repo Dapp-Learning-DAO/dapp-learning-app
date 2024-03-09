@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { useAccount, useReadContract } from "wagmi";
-import { erc20Abi, isAddress } from "viem";
+import { useEffect, useMemo, useState } from "react";
+import { useAccount, useBalance, useChainId, useReadContract } from "wagmi";
+import { erc20Abi, isAddress, isAddressEqual } from "viem";
+import { ETH_TOKEN_ADDRESS } from "config/constants";
 
 export default function useTokenBalanceOf({
   tokenAddr,
@@ -9,16 +10,22 @@ export default function useTokenBalanceOf({
   tokenAddr: `0x${string}` | undefined;
   exceptedBalance?: bigint;
 }) {
-  const { address, chain } = useAccount();
+  const { address } = useAccount();
+  const chainId = useChainId();
   const [isInsufficient, setIsInsufficient] = useState(false);
-  const [balanceOf, setBalanceOf] = useState<bigint | null>(null);
+  const [balanceOf, setBalanceOf] = useState<bigint | undefined>();
+
+  const isETH = useMemo(
+    () => tokenAddr && isAddressEqual(tokenAddr, ETH_TOKEN_ADDRESS),
+    [tokenAddr],
+  );
 
   const {
     data: balanceOfRes,
     refetch: queryBalanceOf,
-    isLoading,
+    isLoading: tokenBalanceLoading,
   } = useReadContract({
-    chainId: chain?.id,
+    chainId: chainId,
     address: tokenAddr,
     abi: erc20Abi,
     functionName: "balanceOf",
@@ -28,31 +35,42 @@ export default function useTokenBalanceOf({
     },
   });
 
-  useEffect(() => {
-    if (tokenAddr && isAddress(tokenAddr) && address) {
-      queryBalanceOf();
-    }
-  }, [tokenAddr, address, queryBalanceOf]);
+  const {
+    data: ethBalanceRes,
+    refetch: queryEthBalance,
+    isLoading: ethBalanceLoading,
+  } = useBalance({
+    address,
+    query: { enabled: false },
+  });
 
   useEffect(() => {
-    if (balanceOfRes) {
-      setBalanceOf(balanceOfRes);
+    if (!address) return;
+    if (isETH) {
+      queryEthBalance();
     } else {
-      setBalanceOf(null);
+      if (tokenAddr && isAddress(tokenAddr)) {
+        queryBalanceOf();
+      }
     }
+  }, [tokenAddr, address, isETH, queryBalanceOf, queryEthBalance]);
 
-    if (
-      tokenAddr &&
-      isAddress(tokenAddr) &&
-      !isLoading &&
-      typeof balanceOfRes !== "undefined"
-    ) {
+  useEffect(() => {
+    if (tokenBalanceLoading || ethBalanceLoading) return;
+    let _balance: bigint | undefined = undefined;
+    if (isETH && ethBalanceRes) {
+      _balance = ethBalanceRes.value;
+    } else if (!isETH && typeof balanceOfRes !== "undefined") {
+      _balance = balanceOfRes;
+    }
+    setBalanceOf(_balance);
+    if (typeof _balance !== "undefined") {
       try {
         if (
           exceptedBalance &&
-          BigInt(exceptedBalance) > 0 &&
+          BigInt(exceptedBalance) > 0n &&
           // @ts-ignore
-          BigInt(exceptedBalance) > balanceOfRes
+          BigInt(exceptedBalance) > _balance
         ) {
           setIsInsufficient(true);
         } else {
@@ -63,11 +81,19 @@ export default function useTokenBalanceOf({
         setIsInsufficient(false);
       }
     }
-  }, [tokenAddr, balanceOfRes, exceptedBalance, isLoading]);
+  }, [
+    tokenAddr,
+    balanceOfRes,
+    ethBalanceRes,
+    isETH,
+    exceptedBalance,
+    tokenBalanceLoading,
+    ethBalanceLoading,
+  ]);
 
   return {
     balanceOf,
     isInsufficient,
-    isLoading,
+    isLoading: tokenBalanceLoading || ethBalanceLoading,
   };
 }

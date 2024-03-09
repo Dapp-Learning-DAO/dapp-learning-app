@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 export function Modal({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const dialogRef = useRef<ElementRef<"dialog"> & { onDismiss?: () => void }>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -55,6 +55,6 @@ export function Modal({ children }: { children: React.ReactNode }) {
         {children}
       </dialog>
     </div>,
-    document.getElementById("modal-root")!
+    document.getElementById("modal-root")!,
   );
 }

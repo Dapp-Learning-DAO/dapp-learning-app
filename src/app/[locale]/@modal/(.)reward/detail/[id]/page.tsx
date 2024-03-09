@@ -9,7 +9,7 @@ export default function RewardClaimModalPage() {
 
   return (
     <Modal>
-      <div className="modal-box md:min-w-[560px] md:min-h-[50vh]">
+      <div className="modal-box md:min-w-[560px] md:min-h-[50vh] px-2">
         <RewardClaimPage params={{ ...params, isModal: true }} />
       </div>
     </Modal>

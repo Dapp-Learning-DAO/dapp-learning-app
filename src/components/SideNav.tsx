@@ -8,52 +8,9 @@ import LocalesSelector from "./LocalesSelector";
 import ThemeSelector from "./ThemeSelector";
 import useTheme from "hooks/useTheme";
 import { forwardRef } from "react";
+import { BOTTOM_LINKS, NAV_LINKS, SIDE_NAV_WIDTH } from "config/ui";
 
-export const SIDE_NAV_WIDTH = 220;
-
-const NAV_LINKS = [
-  {
-    name: "tools",
-    navs: [
-      { name: "Home", link: "/" },
-      { name: "Reward", link: "/reward" },
-    ],
-  },
-];
-
-const BOTTOM_LINKS = [
-  // { name: "About DappLearning", link: "https://dapplearnig.org" },
-  {
-    name: "Github",
-    link: "https://github.com/Dapp-Learning-DAO/Dapp-Learning",
-  },
-  {
-    name: "Twttier",
-    link: "https://twitter.com/Dapp_Learning",
-  },
-  {
-    name: "Youtube",
-    link: "https://www.youtube.com/c/DappLearning",
-  },
-  {
-    name: "Discord",
-    link: "https://discord.gg/cRYNYXqPeR",
-  },
-  {
-    name: "Telegram",
-    link: "https://t.me/joinchat/48Mp2jy4Yw40MmI1",
-  },
-  {
-    name: "Wechat",
-    link: "https://github.com/Dapp-Learning-DAO/Dapp-Learning/tree/main/docs/imgs/wechat-group-helper.png",
-  },
-  {
-    name: "Donate",
-    link: "https://etherscan.io/address/0x1f7b953113f4dfcbf56a1688529cc812865840e1",
-  },
-];
-
-const SideNav = forwardRef((props, ref:any) => {
+const SideNav = forwardRef((props, ref: any) => {
   // const router = useRouter();
   const pathname = usePathname();
   // const searchParams = useSearchParams();
@@ -63,19 +20,22 @@ const SideNav = forwardRef((props, ref:any) => {
   return (
     <nav
       ref={ref}
-      className="fixed z-20 left-0 top-0 flex flex-col min-h-screen pl-5 pt-5 bg-base-100 shadow"
+      className="fixed z-20 left-0 top-0 flex-col min-h-screen pl-5 pt-5 bg-base-100 shadow hidden sm:flex"
       style={{ width: SIDE_NAV_WIDTH }}
     >
       <div className="pr-5 mb-12">
-        <Image
-          className="w-full"
-          src={`/images/nav-logo-${theme ? theme : "light"}.png`}
-          style={{ objectFit: "contain" }}
-          width={784}
-          height={192}
-          alt="DappLearning logo"
-          priority
-        />
+        <Link href="/">
+          <Image
+            className="w-full"
+            // src={`/images/nav-logo-${theme ? theme : "light"}.png`}
+            src={`${theme && theme === "dark" ? "/images/nav-logo-dark.svg" : "/images/nav-logo-light.png"}`}
+            style={{ objectFit: "contain" }}
+            width={784}
+            height={192}
+            alt="DappLearning logo"
+            priority
+          />
+        </Link>
       </div>
       <ul className="flex-1">
         {NAV_LINKS.map((navs) => (
@@ -126,13 +86,12 @@ const SideNav = forwardRef((props, ref:any) => {
       </ul>
       <div className="flex justify-between">
         <ThemeSelector />
-        <LocalesSelector />
+        {/* <LocalesSelector /> */}
       </div>
     </nav>
   );
 });
 
-SideNav.displayName = "SideNav"
+SideNav.displayName = "SideNav";
 
 export default SideNav;
-

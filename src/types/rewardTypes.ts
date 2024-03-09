@@ -1,4 +1,4 @@
-import { ITokenConf } from "./tokenTypes";
+import { Token } from "config/tokens";
 
 export type IRewardClaimer = {
   address: `0x${string}`;
@@ -7,12 +7,14 @@ export type IRewardClaimer = {
   tokenAddress: string | `0x${string}` | null;
   claimedValue: string | number;
   claimedValueParsed: number | null | undefined;
+  isMe?: boolean;
 };
 
 export type IRewardItem = {
   allClaimed: boolean;
   claimedNumber: number;
   claimedValueParsed: number | null | undefined;
+  addressList: `0x${string}`[];
   claimers: IRewardClaimer[];
   creationTime: string | number;
   creator: `0x${string}`;
@@ -24,6 +26,7 @@ export type IRewardItem = {
   ifrandom: boolean;
   isClaimed: boolean;
   isExpired: boolean;
+  isInClaimers: boolean;
   isRefunded: boolean;
   isCreator: boolean;
   isClaimable: boolean;
@@ -33,7 +36,7 @@ export type IRewardItem = {
   number: number;
   refunded: boolean;
   symbol: string;
-  token: ITokenConf;
+  token: Token;
   tokenAddress: string;
   total: bigint;
   totalParsed: number;
@@ -54,7 +57,7 @@ export type IRewardCreateForm = {
   duration: number;
   durationUnit: number;
   number: number;
-  tokenObj: null | ITokenConf;
+  tokenObj: undefined | Token;
 };
 
 export type IRewardIPFSData = { [cid: string]: `0x${string}`[] };

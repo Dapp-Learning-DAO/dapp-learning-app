@@ -1,6 +1,6 @@
-
 import { SupportedChainId } from "config/chains";
-import { ITokenConf, ITokenConfs } from "types/tokenTypes";
+import { ITokenConf } from "types/tokenTypes";
+import { ITokenConfs, Token } from "config/tokens";
 import { emitCustomEvent } from "hooks/useCustomEvent";
 export const LOCAL_CUSTOM_TOKENS_KEY = "LOCAL_CUSTOM_TOKENS";
 export const LOCAL_CUSTOM_TOKENS_EVENT = "LOCAL_CUSTOM_TOKENS_EVENT";
@@ -24,7 +24,7 @@ export const localCustomTokens = {
     }
     return null;
   },
-  addToken(chainId: number | SupportedChainId, _token: ITokenConf) {
+  addToken(chainId: number | SupportedChainId, _token: Token) {
     let tokens = this.getTokens();
     if (!tokens) tokens = {};
     if (!tokens[chainId]) tokens[chainId] = {};
@@ -33,14 +33,11 @@ export const localCustomTokens = {
   },
   getTokensByChainId(
     chainId: number | SupportedChainId,
-  ): { [key: string]: ITokenConf } | null {
+  ): { [key: string]: Token } | null {
     let tokens = this.getTokens();
     return tokens ? tokens[chainId] : null;
   },
-  getToken(
-    chainId: number | SupportedChainId,
-    symbol: string,
-  ): ITokenConf | null {
+  getToken(chainId: number | SupportedChainId, symbol: string): Token | null {
     let tokens = this.getTokensByChainId(chainId);
     return tokens && tokens[symbol] ? tokens[symbol] : null;
   },
@@ -51,7 +48,7 @@ export const localCustomTokens = {
   getTokenByAddress(
     chainId: number | SupportedChainId,
     address: string | `0x${string}`,
-  ): ITokenConf | null {
+  ): Token | null {
     let tokens = this.getTokensByChainId(chainId);
     if (!tokens) return null;
     let token = Object.values(tokens).find(

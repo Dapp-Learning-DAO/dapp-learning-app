@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   useAccount,
+  useChainId,
   useSimulateContract,
   useWaitForTransactionReceipt,
   useWriteContract,
@@ -12,7 +13,7 @@ import RewardCreateForm from "./RewardCreateForm";
 import AlertBox, { showAlertMsg } from "components/AlertBox";
 import AutoSwitchNetwork from "components/AutoSwitchNetwork";
 import useRedpacketContract from "hooks/useRedpacketContract";
-import { ZERO_BYTES32 } from "constant/index";
+import { ZERO_BYTES32 } from "config/constants";
 import { IRewardCreateForm } from "types/rewardTypes";
 import { pinJSONToIPFS } from "utils/ipfs";
 import { emitCustomEvent } from "hooks/useCustomEvent";
@@ -20,7 +21,8 @@ import { REWARD_LIST_REFRESH_EVENT } from "hooks/useRedpacketsLists";
 import { REWARD_MSG_PRE } from "config/constants";
 
 export default function CreateRedpacketPage() {
-  const { address, chain } = useAccount();
+  const { isConnected } = useAccount();
+  const chainId = useChainId();
   const formRef = useRef(null);
   const alertBoxRef = useRef(null);
   const approveBtnRef = useRef(null);
@@ -42,7 +44,7 @@ export default function CreateRedpacketPage() {
     isLoading: simWriteLoading,
     refetch: refetchsim,
   } = useSimulateContract({
-    chainId: chain?.id,
+    chainId: chainId,
     address: redPacketContract?.address as `0x${string}`,
     abi: redPacketContract?.abi,
     functionName: "create_red_packet",
@@ -104,6 +106,7 @@ export default function CreateRedpacketPage() {
     setFormData(null);
     setIpfsCid(null);
     writeReset();
+    setTs(Math.floor(new Date().getTime() / 1000));
   }, [writeReset]);
 
   useEffect(() => {
@@ -112,10 +115,11 @@ export default function CreateRedpacketPage() {
       reset();
     }
     if (txRes) {
+      emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 60 * 1000);
+      sessionStorage.setItem(REWARD_LIST_REFRESH_EVENT, `${30 * 1000}`);
       showAlertMsg(alertBoxRef, "Create Successfully!", "success");
       console.log("CreationSuccess", txRes);
       showCongrats();
-      emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 30 * 1000);
     }
   }, [txRes, txIsError, reset]);
 
@@ -191,14 +195,9 @@ export default function CreateRedpacketPage() {
   // after click submit, and ipfs data uploaded,
   // will resim the contract write func
   useEffect(() => {
-    if (
-      !submitClicked ||
-      !ipfsCid ||
-      !simIsSuccess
-    )
-      return;
+    if (!submitClicked || !ipfsCid || !simIsSuccess) return;
     try {
-      console.warn("Create redpacket tx request", createWriteSimRes!.request)
+      console.warn("Create redpacket tx request", createWriteSimRes!.request);
       writeCreateRepacket?.(createWriteSimRes!.request);
     } catch (error) {
       console.error("writeCreateRepacket error", error);
@@ -225,7 +224,7 @@ export default function CreateRedpacketPage() {
 
   useEffect(() => {
     const dialog = (document as any).querySelector(
-      "#redpacket_create_success_modal"
+      "#redpacket_create_success_modal",
     );
     const handleKeyDown = (event: any) => {
       if (event.key === "Escape") {
@@ -261,10 +260,14 @@ export default function CreateRedpacketPage() {
               }}
             />
             <AlertBox ref={alertBoxRef} />
-            <div className="mb-4 md:grid md:grid-cols-2 md:gap-8 md:p-8">
+            <div className="mb-4">
               <ApproveBtn
                 ref={approveBtnRef}
+                // autoHidden
                 tokenAddr={selectedTokenAddr as `0x${string}`}
+                targetAddr={
+                  redPacketContract ? redPacketContract?.address : undefined
+                }
                 exceptedAllowance={exceptedAllowance}
                 onApprovalChange={setIsApproved}
                 onError={() => {
@@ -273,14 +276,14 @@ export default function CreateRedpacketPage() {
               />
 
               <button
-                className="mb-4 btn btn-primary btn-block md:flex-1"
+                className={`mb-4 btn btn-primary btn-block ${!isApproved ? "hidden" : ""}`}
                 disabled={submitClicked || submitDisabled || submitLoading}
                 onClick={handleSubmit}
               >
                 {(submitClicked || submitLoading) && (
                   <div className="loading loading-spinner loading-md inline-block mr-2"></div>
                 )}
-                {submitClicked || submitLoading ? "Loading" : "Submit"}
+                {submitClicked || submitLoading ? "Loading" : "Create"}
               </button>
             </div>
           </div>

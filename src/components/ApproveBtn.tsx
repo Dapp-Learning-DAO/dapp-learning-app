@@ -1,7 +1,8 @@
-"use client"
+"use client";
 import { forwardRef, useCallback, useEffect, useState } from "react";
 import {
   useAccount,
+  useChainId,
   useReadContract,
   useSimulateContract,
   useWaitForTransactionReceipt,
@@ -9,44 +10,44 @@ import {
 } from "wagmi";
 import { erc20Abi, isAddress } from "viem";
 import { useDebounce } from "react-use";
-import useRedpacketContract from "hooks/useRedpacketContract";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const ApproveBtn = forwardRef(
   (
     {
       tokenAddr,
+      targetAddr,
       exceptedAllowance,
       onApprovalChange,
       onError,
+      autoHidden,
     }: {
       tokenAddr: `0x${string}` | undefined;
+      targetAddr: `0x${string}` | undefined;
       exceptedAllowance: bigint;
       onApprovalChange?: (_v: boolean) => void;
       onError?: (_error: any) => void;
+      autoHidden?: boolean;
     },
     ref: any,
   ) => {
-    const { address, chain } = useAccount();
+    const { address, isConnected } = useAccount();
+    const chainId = useChainId();
     const [isApproved, setIsApproved] = useState(false);
     const [queriedTokenAddr, setQueriedTokenAddr] = useState("");
     const [approveIsLoading, setApproveIsLoading] = useState(false);
     const [approveDisabled, setApproveDisabled] = useState(true);
-
-    const redPacketContract = useRedpacketContract();
 
     const {
       data: allowanceRes,
       refetch: queryAllowance,
       isLoading: isAllowanceLoading,
     } = useReadContract({
-      chainId: chain?.id,
+      chainId: chainId,
       address: tokenAddr,
       abi: erc20Abi,
       functionName: "allowance",
-      args: [
-        address as `0x${string}`,
-        redPacketContract?.address as `0x${string}`,
-      ],
+      args: [address as `0x${string}`, targetAddr as `0x${string}`],
       query: {
         enabled: false,
       },
@@ -55,14 +56,14 @@ const ApproveBtn = forwardRef(
     useDebounce(
       async () => {
         if (tokenAddr && isAddress(tokenAddr)) {
-          if (address && redPacketContract && !!redPacketContract?.address) {
+          if (address && targetAddr) {
             await queryAllowance();
             setQueriedTokenAddr(tokenAddr);
           }
         }
       },
       500,
-      [tokenAddr, address, redPacketContract],
+      [tokenAddr, address, targetAddr],
     );
 
     useEffect(() => {
@@ -75,6 +76,10 @@ const ApproveBtn = forwardRef(
       ) {
         try {
           if (exceptedAllowance > 0n && exceptedAllowance <= allowanceRes) {
+            setIsApproved(true);
+            if (onApprovalChange) onApprovalChange(true);
+            return;
+          } else if (exceptedAllowance == 0n && allowanceRes > 0n) {
             setIsApproved(true);
             if (onApprovalChange) onApprovalChange(true);
             return;
@@ -101,18 +106,17 @@ const ApproveBtn = forwardRef(
       // isError: simIsError,
       // error: simErrorMsg,
     } = useSimulateContract({
-      chainId: chain?.id,
+      chainId: chainId,
       address: tokenAddr,
       abi: erc20Abi,
       functionName: "approve",
-      args: [redPacketContract?.address as `0x${string}`, exceptedAllowance],
+      args: [targetAddr as `0x${string}`, exceptedAllowance],
       query: {
         enabled:
           !!tokenAddr &&
           typeof allowanceRes !== "undefined" &&
           !isApproved &&
-          !!redPacketContract &&
-          !!redPacketContract?.address &&
+          targetAddr &&
           exceptedAllowance > 0n,
       },
     });
@@ -200,21 +204,60 @@ const ApproveBtn = forwardRef(
 
     return (
       <div className="w-full mb-4" ref={ref}>
-        {isApproved ? (
-          <button className="btn btn-block md:flex-1" disabled>
-            Already Approved
-          </button>
+        {isConnected ? (
+          isApproved ? (
+            <button
+              className={`btn btn-block ${autoHidden && isApproved ? "hidden" : ""}`}
+              disabled
+            >
+              Already Approved
+            </button>
+          ) : (
+            <button
+              className="btn btn-primary btn-block"
+              disabled={approveDisabled}
+              onClick={handleClick}
+            >
+              {approveIsLoading && (
+                <div className="loading loading-spinner loading-md inline-block mr-2"></div>
+              )}
+              {approveIsLoading ? "Loading" : "Approve"}
+            </button>
+          )
         ) : (
-          <button
-            className="btn btn-primary btn-block md:flex-1"
-            disabled={approveDisabled}
-            onClick={handleClick}
-          >
-            {approveIsLoading && (
-              <div className="loading loading-spinner loading-md inline-block mr-2"></div>
-            )}
-            {approveIsLoading ? "Loading" : "Approve"}
-          </button>
+          <ConnectButton.Custom>
+            {({
+              account,
+              chain,
+              openConnectModal,
+              authenticationStatus,
+              mounted,
+            }) => {
+              // Note: If your app doesn't use authentication, you
+              // can remove all 'authenticationStatus' checks
+              const ready = mounted && authenticationStatus !== "loading";
+              const connected =
+                ready &&
+                account &&
+                chain &&
+                (!authenticationStatus ||
+                  authenticationStatus === "authenticated");
+
+              if (!connected) {
+                return (
+                  <button
+                    className="btn btn-primary btn-block"
+                    onClick={openConnectModal}
+                    type="button"
+                  >
+                    Connect Wallet
+                  </button>
+                );
+              } else {
+                return null;
+              }
+            }}
+          </ConnectButton.Custom>
         )}
       </div>
     );

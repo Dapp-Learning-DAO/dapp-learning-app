@@ -7,7 +7,7 @@ function useTheme() {
     setTheme(document.documentElement.getAttribute("data-theme"));
     const observerCallback = (
       mutationsList: MutationRecord[],
-      observer: MutationObserver
+      observer: MutationObserver,
     ) => {
       for (const mutation of mutationsList) {
         if (

@@ -46,7 +46,7 @@ export default function Footer() {
   return (
     <footer className="relative pt-4 pb-4 w-full bg-slate-100 dark:bg-neutral">
       <div className="container m-auto flex flex-col items-center font-light">
-        <div className="flex w-[80%] md:max-w-sm">
+        <div className="flex w-[80%] mb-2 md:max-w-sm">
           {community.map((item) => (
             <a
               key={item.name}
@@ -57,7 +57,7 @@ export default function Footer() {
             </a>
           ))}
         </div>
-        <div className="text-slate-500 text-base">
+        <div className="text-slate-500 text-sm md:text-base">
           Copyright &copy; {year}
           <span aria-label="rocket emoji">🚀</span>
           Dapp-Learning

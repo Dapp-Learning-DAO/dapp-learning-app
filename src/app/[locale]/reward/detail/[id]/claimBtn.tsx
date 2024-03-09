@@ -21,12 +21,10 @@ export default function ClaimBtn({
   item,
   onSuccess,
   setCloseDisabled,
-  isModal,
 }: {
   item: IRewardItem;
   onSuccess: () => void;
   setCloseDisabled: (_disabled: boolean) => void;
-  isModal?: boolean | undefined;
 }) {
   const { address } = useAccount();
   const chainId = useChainId();
@@ -85,8 +83,8 @@ export default function ClaimBtn({
   } = useWriteContract();
 
   useEffect(() => {
-    if (address && item?.claimers && item.claimers.length > 0) {
-      const merkleTree = getMerkleTree(item.claimers.map((row) => row.address));
+    if (address && item?.addressList && item.addressList.length > 0) {
+      const merkleTree = getMerkleTree(item.addressList);
       let _proof = merkleTree.getHexProof(hashToken(address as `0x${string}`));
       let _root = merkleTree.getHexRoot();
 
@@ -107,7 +105,7 @@ export default function ClaimBtn({
       setProof([]);
       setMerkleVrified(false);
     }
-  }, [address, item?.claimers]);
+  }, [address, item?.addressList]);
 
   useEffect(() => {
     if (simErrorMsg) {
@@ -137,7 +135,7 @@ export default function ClaimBtn({
         if (parsedLog[0]) {
           claimed_value_parsed = formatUnits(
             (parsedLog[0].args as any).claimed_value,
-            item?.decimals
+            item?.decimals,
           );
           console.log("ClaimSuccess decodedLog", parsedLog);
 
@@ -161,7 +159,7 @@ export default function ClaimBtn({
           ? `Claimed ${claimed_value_parsed} ${item?.symbol ?? ""}!`
           : `Claim Successfully!`,
         "success",
-        0
+        0,
       );
       if (onSuccess) onSuccess();
     }

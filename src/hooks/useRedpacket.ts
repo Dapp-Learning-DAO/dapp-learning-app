@@ -5,7 +5,7 @@ import { useAccount } from "wagmi";
 import localforage from "localforage";
 import { getExpTime, processRedpacketItem } from "./useRedpacketsLists";
 import { IRewardItem } from "types/rewardTypes";
-import { getCidFromMsg } from "src/app/[locale]/reward/utils";
+import { getCidFromMsg } from "utils/index";
 
 export default function useRedpacket({ id }: { id: string }) {
   const { address } = useAccount();
@@ -26,9 +26,14 @@ export default function useRedpacket({ id }: { id: string }) {
       const _addrList = await localforage.getItem(cid);
       if (_addrList) _ipfsData[cid] = _addrList as `0x${string}`[];
     }
-    setItem(
-      processRedpacketItem(data.redpacket, address, getExpTime(), _ipfsData)
+    const _data = processRedpacketItem(
+      data.redpacket,
+      address,
+      getExpTime(),
+      _ipfsData,
     );
+    console.log("useRedpacket data", _data);
+    setItem(_data);
   };
 
   useEffect(() => {

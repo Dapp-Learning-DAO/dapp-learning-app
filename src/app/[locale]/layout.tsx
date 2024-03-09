@@ -2,8 +2,8 @@
 import { Inter } from "next/font/google";
 
 // style
-import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
+import "./globals.css";
 
 // config
 import { metadata as metadataConf } from "config/seo";
@@ -37,11 +37,7 @@ export default function RootLayout({
         <SkipLink />
         <Web3Providers>
           <I18nProvider locale={locale}>
-            <AppLayout
-              isBlur={isModalActivate}
-            >
-              {children}
-            </AppLayout>
+            <AppLayout isBlur={isModalActivate}>{children}</AppLayout>
             {modal}
             {/* modal slot */}
             <div id="modal-root"></div>

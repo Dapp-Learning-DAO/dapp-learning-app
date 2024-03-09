@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
   keywords:
     "dapp-learing|dapp|blockchain|ehtereum|Defi|NFT|DAO|zero knowledge|ZK".split(
-      "|"
+      "|",
     ),
   openGraph: {
     type: "website",

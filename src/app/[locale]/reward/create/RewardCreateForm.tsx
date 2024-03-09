@@ -1,24 +1,17 @@
 "use client";
-import {
-  useState,
-  useEffect,
-  forwardRef,
-  useMemo,
-  useRef,
-  useCallback,
-} from "react";
+import { useState, useEffect, forwardRef, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Validate from "utils/validate";
-import TokenAmountInput from "components/TokenAmountInput";
 import TokenSelector from "components/TokenSelector";
 import { IRewardCreateForm } from "types/rewardTypes";
 import AddressListInput from "components/AddressListInput";
-import { ITokenConf } from "types/tokenTypes";
 import { useDebounce } from "react-use";
 import useZKsnark from "hooks/useZKsnark";
 import { keccak256 } from "viem";
 import { MerkleTree } from "merkletreejs";
 import { hashToken } from "utils/getMerkleTree";
+import useTokenAmountInput from "hooks/useTokenAmountInput";
+import { Token } from "config/tokens";
 
 const defaultValues: IRewardCreateForm = {
   isValid: false,
@@ -30,12 +23,12 @@ const defaultValues: IRewardCreateForm = {
   tokenType: 1,
   members: [],
   merkleRoot: null,
-  tokenAmount: 0,
+  tokenAmount: "",
   tokenAmountParsed: 0n,
   duration: 1,
   durationUnit: 1 * 60 * 60 * 24,
   number: 1,
-  tokenObj: null,
+  tokenObj: undefined,
 };
 
 const RewardCreateForm = forwardRef(
@@ -47,10 +40,10 @@ const RewardCreateForm = forwardRef(
       editDisabled: boolean;
       onChange: (_v: IRewardCreateForm) => void;
     },
-    ref: any
+    ref: any,
   ) => {
     const [enablePassword, setEnablePassword] = useState(false);
-    const [tokenObj, setTokenObj] = useState<ITokenConf | null>(null);
+    const [tokenObj, setTokenObj] = useState<Token | undefined>();
     const [changeCount, setChangeCount] = useState(0);
     const { calculatePublicSignals } = useZKsnark();
 
@@ -75,9 +68,31 @@ const RewardCreateForm = forwardRef(
       defaultValues,
     });
 
+    const { balanceOf, maxBalance, isInsufficient, amountParsed } =
+      useTokenAmountInput({
+        inputVal: getValues("tokenAmount"),
+        tokenObj,
+      });
+
+    useEffect(() => {
+      setValue("tokenAmountParsed", amountParsed);
+      trigger("tokenAmountParsed").then(() => {
+        setChangeCount((prev) => prev + 1); // need trigger when click max btn
+      });
+    }, [amountParsed, setValue, trigger]);
+
+    useEffect(() => {
+      // @todo set 0 if WETH(ETH)
+      setValue("tokenType", 1);
+      setValue("tokenObj", tokenObj);
+      trigger(["tokenObj", "tokenType"]).then(() => {
+        setChangeCount((prev) => prev + 1);
+      });
+    }, [tokenObj]);
+
     const tokenAmountValidate = (
       value: string | number,
-      formValues: IRewardCreateForm
+      formValues: IRewardCreateForm,
     ) => {
       clearErrors("tokenAmount");
       const amount = value;
@@ -120,7 +135,7 @@ const RewardCreateForm = forwardRef(
         }
         setChangeCount((prev) => prev + 1);
       },
-      [calculatePublicSignals, setValue]
+      [calculatePublicSignals, setValue],
     );
 
     // generate merkle root
@@ -131,7 +146,7 @@ const RewardCreateForm = forwardRef(
           const merkleTree = new MerkleTree(
             membersWatchData?.map((address) => hashToken(address)),
             keccak256,
-            { sortPairs: true }
+            { sortPairs: true },
           );
           const merkleRoot = merkleTree.getHexRoot();
           setValue("merkleRoot", merkleRoot);
@@ -142,7 +157,7 @@ const RewardCreateForm = forwardRef(
         setChangeCount((prev) => prev + 1);
       },
       500,
-      [membersWatchData, setValue]
+      [membersWatchData, setValue],
     );
 
     const handleFormChange = async (data: IRewardCreateForm | null) => {
@@ -156,7 +171,7 @@ const RewardCreateForm = forwardRef(
         handleFormChange(null);
       },
       500,
-      [changeCount]
+      [changeCount],
     );
 
     return (
@@ -189,10 +204,10 @@ const RewardCreateForm = forwardRef(
             )}
           </div>
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
-            <div className="flex">
+            <div className="flex items-center">
               <span className="flex-1">
                 <strong>Password</strong>
-                <span className="text-sm text-slate-500 ml-4">
+                <span className="text-sm text-slate-500 ml-4 hidden sm:inline">
                   (set claim password)
                 </span>
               </span>
@@ -445,15 +460,10 @@ const RewardCreateForm = forwardRef(
               {...register("tokenObj", {
                 required: true,
               })}
-              editDisabled={editDisabled}
-              onSelect={async (_token) => {
-                // @todo set 0 if WETH(ETH)
-                setValue("tokenType", 1);
-                setValue("tokenObj", _token);
-                setTokenObj(_token);
-                await trigger(["tokenObj", "tokenType"]);
-                setChangeCount((prev) => prev + 1);
-              }}
+              autoSelect
+              curToken={tokenObj}
+              setCurToken={setTokenObj}
+              disabled={editDisabled}
             />
             {errors.tokenType && (
               <span className="mt-2 text-error text-xs font-bold">
@@ -468,30 +478,66 @@ const RewardCreateForm = forwardRef(
           </div>
           <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
             <strong>Token Amount</strong>
-            <TokenAmountInput
-              {...register("tokenAmount", {
+            <Controller
+              name="tokenAmount"
+              control={control}
+              rules={{
                 required: true,
                 validate: tokenAmountValidate,
-              })}
-              editDisabled={editDisabled}
-              tokenObj={tokenObj}
-              onAmountChange={async ({ amount, amountParsed }) => {
-                setValue("tokenAmount", amount);
-                setValue("tokenAmountParsed", amountParsed);
-                await trigger("tokenAmountParsed");
-                // setChangeCount((prev) => prev + 1);
               }}
+              render={({ field, fieldState, formState }) => (
+                <div className={`relative w-full h-16`}>
+                  <input
+                    {...field}
+                    className="input input-bordered w-full h-full"
+                    type="text"
+                    disabled={editDisabled}
+                    placeholder="input amount"
+                  />
+                  {tokenObj ? (
+                    <div
+                      className="absolute right-2 bottom-4 cursor-pointer text-slate-500"
+                      style={{
+                        lineHeight: "16px",
+                        height: "16px",
+                        fontSize: 12,
+                      }}
+                    >
+                      Balance:
+                      <span className="ml-1">{maxBalance}</span>
+                      <div
+                        className={`btn btn-sm btn-link pl-1 pr-0 ${
+                          balanceOf && balanceOf > 0n ? "" : "hidden"
+                        }`}
+                        onClick={() => {
+                          setValue("tokenAmount", maxBalance);
+                          if ((field.ref as any).current)
+                            (field.ref as any).current.value = maxBalance;
+                          trigger("tokenAmount").then(() => {
+                            setChangeCount((prev) => prev + 1); // need trigger when click max btn
+                          });
+                        }}
+                      >
+                        Max
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             />
             {errors.tokenAmount && (
               <span className="mt-2 text-error text-xs font-bold">
                 {errors.tokenAmount.message}
               </span>
             )}
+            {isInsufficient && (
+              <div className="text-error font-bold">Insufficient Balance</div>
+            )}
           </div>
         </div>
       </form>
     );
-  }
+  },
 );
 
 RewardCreateForm.displayName = "RewardCreateForm";

@@ -23,16 +23,16 @@
     "paths": {
       "context/*": ["./src/context/*"],
       "hooks/*": ["./src/hooks/*"],
-      "constant/*": ["./src/constant/*"],
       "config/*": ["./src/config/*"],
       "components/*": ["./src/components/*"],
       "utils/*": ["./src/utils/*"],
       "gql/*": ["./src/gql/*"],
       "locales/*": ["./src/locales/*"],
       "provider/*": ["./src/provider/*"],
+      "api/*": ["./src/app/api/*"],
       "types/*": ["./src/types/*"],
       "src/*": ["./src/*"],
-      "app/*": ["./src/app/[locale]/*"],
+      "app/*": ["./src/app/[locale]/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

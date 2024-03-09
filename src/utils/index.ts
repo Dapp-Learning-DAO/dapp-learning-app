@@ -1,3 +1,5 @@
+"use client";
+import { ReadonlyURLSearchParams } from "next/navigation";
 import { isAddress } from "viem";
 
 export function shortAddress(str: string): string {
@@ -24,4 +26,17 @@ export const numAutoToFixed = (num: number, maxDecimalPlaces: number = 4) => {
     return num.toFixed(maxDecimalPlaces);
   }
   return num;
+};
+
+export const isCidMsgValid = (msg: any): boolean => {
+  return (
+    typeof msg === "string" && msg !== "null" && /^APP_\d+_[a-z0-9]+$/.test(msg)
+  );
+};
+
+export const getCidFromMsg = (msg: any): string => {
+  if (isCidMsgValid(msg)) {
+    return msg.split("_")[2];
+  }
+  return "";
 };

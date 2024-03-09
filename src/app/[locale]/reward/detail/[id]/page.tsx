@@ -1,24 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import useRedpacket from "hooks/useRedpacket";
 import ClaimBtn from "./claimBtn";
 import RefundBtn from "./refundBtn";
 import RedpacketZkTag from "../../rewardComponents/RedpacketIcons/RedpacketZkTag";
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import RedPacketInfo from "../../rewardComponents/RedpacketInfo";
 import RewardDetailLoading from "./loading";
 import { emitCustomEvent } from "hooks/useCustomEvent";
 import { REWARD_LIST_REFRESH_EVENT } from "hooks/useRedpacketsLists";
+import { useDebounce } from "react-use";
 
 export default function RewardDetailPage({
   params: { id, isModal },
 }: {
-  params: { id: string; isModal?: boolean | undefined };
+  params: {
+    id: string;
+    isModal?: boolean | undefined;
+  };
 }) {
   const router = useRouter();
+  const connectedChainId = useChainId();
+  const searchParams = useSearchParams();
 
   const { data: item, loading: gqlLoading, refetch } = useRedpacket({ id });
   const [closeDisabled, setCloseDisabled] = useState(false);
@@ -26,7 +32,20 @@ export default function RewardDetailPage({
   // trigger refetch graph data, when user interact with contract
   const handleTxSuccess = () => {
     emitCustomEvent(REWARD_LIST_REFRESH_EVENT, 30 * 1000); // refetch during 30s
+    setCloseDisabled(false);
   };
+
+  useDebounce(
+    () => {
+      if (
+        searchParams.get("chainId") &&
+        connectedChainId.toString() !== searchParams.get("chainId")
+      )
+        router.back();
+    },
+    500,
+    [searchParams, connectedChainId],
+  );
 
   return (
     <>
@@ -35,7 +54,7 @@ export default function RewardDetailPage({
       ) : (
         <div
           className={`m-auto ${
-            !isModal ? "card border rounded-xl p-12 max-w-xl" : ""
+            !isModal ? "card border rounded-xl py-12 max-w-xl px-4" : ""
           }`}
           style={{ maxHeight: isModal ? "calc(100vh - 3em)" : "auto" }}
         >
@@ -53,8 +72,10 @@ export default function RewardDetailPage({
                 <XCircleIcon className="w-6" />
               </button>
             )}
-            <div className="overflow-y-auto max-h-[30vh] md:max-h-[50vh] mb-4 py-4 pr-2">
-              <div className="py-4 min-h-40vh min-w-fit">
+            <div
+              className={`overflow-y-auto max-h-[30vh] md:max-h-[50vh] mb-4 py-4`}
+            >
+              <div className={`py-4 min-h-40vh ${isModal ? "px-2" : "px-4"}`}>
                 {item && <RedPacketInfo item={item} />}
               </div>
             </div>
@@ -64,7 +85,6 @@ export default function RewardDetailPage({
               item={item}
               onSuccess={handleTxSuccess}
               setCloseDisabled={setCloseDisabled}
-              isModal={isModal}
             />
           )}
           {item.isCreator && (
@@ -72,7 +92,6 @@ export default function RewardDetailPage({
               item={item}
               onSuccess={handleTxSuccess}
               setCloseDisabled={setCloseDisabled}
-              isModal={isModal}
             />
           )}
         </div>
