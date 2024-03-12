@@ -221,6 +221,7 @@ export let TokenConf: ITokenConfs = Object.freeze({
       symbol: "DAI",
       name: "Dai stable coin",
     }),
+    // DLD TST 0xcd789635ed87F6dF5731B89F27EFC838cd5870E3
   },
   [SupportedChainId.SEPOLIA]: {
     ETH: new Token({
