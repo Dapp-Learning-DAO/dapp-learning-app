@@ -5,6 +5,7 @@ export enum SupportedChainId {
   MAINNET = 1,
   OPTIMISM = 10,
   ARBITRUM_ONE = 42161,
+  ZKSYNC = 324,
   SCROLL = 534352,
   SEPOLIA = 11155111,
 }
@@ -13,6 +14,7 @@ export const CHAIN_IDS_TO_NAMES: { [chainId: number]: string } = {
   [SupportedChainId.MAINNET]: "mainnet",
   [SupportedChainId.OPTIMISM]: "optimism",
   [SupportedChainId.ARBITRUM_ONE]: "arbitrum",
+  [SupportedChainId.ZKSYNC]: "zksync",
   [SupportedChainId.SCROLL]: "scroll",
   [SupportedChainId.SEPOLIA]: "sepolia",
 };
@@ -34,6 +36,7 @@ export const SUPPORTED_GAS_ESTIMATE_CHAIN_IDS = [
   SupportedChainId.MAINNET,
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM_ONE,
+  SupportedChainId.ZKSYNC,
   SupportedChainId.SCROLL,
   SupportedChainId.SEPOLIA,
 ];
@@ -42,10 +45,10 @@ export const SUPPORTED_GAS_ESTIMATE_CHAIN_IDS = [
  * All the chain IDs that are running the Ethereum protocol.
  */
 export const L1_CHAIN_IDS = [
-  SupportedChainId.MAINNET,
-  SupportedChainId.SCROLL,
-  SupportedChainId.ARBITRUM_ONE,
   SupportedChainId.OPTIMISM,
+  SupportedChainId.ARBITRUM_ONE,
+  SupportedChainId.SCROLL,
+  SupportedChainId.ZKSYNC,
   SupportedChainId.SEPOLIA,
 ] as const;
 

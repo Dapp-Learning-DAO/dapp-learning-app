@@ -1,19 +1,25 @@
 import { CHAIN_IDS_TO_NAMES, SupportedChainId } from "config/chains";
 import { ETH_TOKEN_ADDRESS } from "config/constants";
-import { TokenConf } from "config/tokens";
+import { TokenConf, TokensSymbols } from "config/tokens";
 
 export function getTokenIcon(address: `0x${string}` | string, chainId: number) {
   if (!address || !chainId) return "";
   if (address.toLowerCase() === ETH_TOKEN_ADDRESS.toLowerCase())
     return ETH_AVATAR;
-  if (chainId == Number(SupportedChainId.SEPOLIA)) return "";
+
+  let addressToSymbol = TokensSymbols[chainId][address.toLowerCase()];
+  if (addressToSymbol && addressToSymbol !== "TST") {
+    if (addressToSymbol === "USDC.e") addressToSymbol = "USDC";
+    return `/images/tokens/${addressToSymbol}.png`;
+  }
+
   if (
-    (chainId == Number(SupportedChainId.OPTIMISM) &&
-      address == TokenConf[SupportedChainId.OPTIMISM]["USDC"]["address"]) ||
-    (chainId == Number(SupportedChainId.ARBITRUM_ONE) &&
-      address == TokenConf[SupportedChainId.ARBITRUM_ONE]["USDC"]["address"])
-  )
-    return `https://static.optimism.io/data/USDC/logo.png`;
+    [SupportedChainId.SEPOLIA, SupportedChainId.ZKSYNC].some(
+      (_chainId) => Number(_chainId) === chainId,
+    )
+  ) {
+    return "";
+  }
 
   if (chainId == Number(SupportedChainId.SCROLL)) {
     return `https://cdn.sushi.com/image/upload/f_auto,c_limit,w_64,q_auto/tokens/534352/${address}.jpg`;

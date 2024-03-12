@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, forwardRef, useCallback } from "react";
+import { useState, useEffect, forwardRef, useCallback, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Validate from "utils/validate";
 import TokenSelector from "components/TokenSelector";
@@ -12,6 +12,8 @@ import { MerkleTree } from "merkletreejs";
 import { hashToken } from "utils/getMerkleTree";
 import useTokenAmountInput from "hooks/useTokenAmountInput";
 import { Token } from "config/tokens";
+import { useChainId } from "wagmi";
+import { SupportedChainId } from "config/chains";
 
 const defaultValues: IRewardCreateForm = {
   isValid: false,
@@ -42,6 +44,7 @@ const RewardCreateForm = forwardRef(
     },
     ref: any,
   ) => {
+    const chainId = useChainId();
     const [enablePassword, setEnablePassword] = useState(false);
     const [tokenObj, setTokenObj] = useState<Token | undefined>();
     const [changeCount, setChangeCount] = useState(0);
@@ -67,6 +70,16 @@ const RewardCreateForm = forwardRef(
       disabled: !!editDisabled,
       defaultValues,
     });
+
+    const zkEnabled = useMemo(() => {
+      if (chainId === SupportedChainId.ZKSYNC) {
+        setEnablePassword(false);
+        setValue("password", "");
+        return false;
+      } else {
+        return true;
+      }
+    }, [chainId, setEnablePassword, setValue]);
 
     const { balanceOf, maxBalance, isInsufficient, amountParsed } =
       useTokenAmountInput({
@@ -203,7 +216,9 @@ const RewardCreateForm = forwardRef(
               </span>
             )}
           </div>
-          <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
+          <div
+            className={`flex flex-col justify-center gap-1 pb-2 mt-3 ${!zkEnabled ? "hidden" : ""}`}
+          >
             <div className="flex items-center">
               <span className="flex-1">
                 <strong>Password</strong>

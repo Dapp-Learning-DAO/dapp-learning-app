@@ -142,6 +142,29 @@ export let TokenConf: ITokenConfs = {
       name: "Arbitrum",
     }),
   },
+  [SupportedChainId.ZKSYNC]: {
+    USDT: new Token({
+      chainId: SupportedChainId.ZKSYNC,
+      address: "0x493257fD37EDB34451f62EDf8D2a0C418852bA4C",
+      decimals: 6,
+      symbol: "USDT",
+      name: "Tether USD",
+    }),
+    USDC: new Token({
+      chainId: SupportedChainId.ZKSYNC,
+      address: "0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4",
+      decimals: 6,
+      symbol: "USDC",
+      name: "USDC",
+    }),
+    DAI: new Token({
+      chainId: SupportedChainId.ZKSYNC,
+      address: "0x4B9eb6c0b6ea15176BBF62841C6B2A8a398cb656",
+      decimals: 18,
+      symbol: "DAI",
+      name: "Dai stable coin",
+    }),
+  },
   [SupportedChainId.SCROLL]: {
     ETH: new Token({
       chainId: SupportedChainId.SCROLL,

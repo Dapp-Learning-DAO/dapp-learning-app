@@ -17,7 +17,7 @@ type useTokenAmountInputReturn = {
   isInsufficient: boolean;
 };
 
-const TokenAmountInput = ({
+const useTokenAmountInput = ({
   inputVal,
   tokenObj,
 }: useTokenAmountInputProps): useTokenAmountInputReturn => {
@@ -63,7 +63,7 @@ const TokenAmountInput = ({
   };
 };
 
-export default TokenAmountInput;
+export default useTokenAmountInput;
 
 function isAmountValid(amount: string | number) {
   const regex = /^(-)?\d+(\.\d{0,18})?$/;

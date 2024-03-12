@@ -191,7 +191,7 @@ const AddressListInput = forwardRef(
             <div className="relative">
               <textarea
                 ref={textareaRef}
-                placeholder="input address and press enter"
+                placeholder="input address separated by comma, semicolon, or new line"
                 className="block w-full textarea textarea-bordered flex-1 pb-12 mr-4"
                 onChange={handleTextareaChange}
                 disabled={disabled}

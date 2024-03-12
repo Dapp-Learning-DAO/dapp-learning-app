@@ -23,7 +23,6 @@ export default function useZKsnark() {
     if (res) {
       console.log("calculateProof verify passed!");
 
-      // @remind 必须使用 exportSolidityCallData 方法转换，否则calldata顺序不对
       const proof = convertCallData(
         await groth16.exportSolidityCallData(
           proveRes.proof,
