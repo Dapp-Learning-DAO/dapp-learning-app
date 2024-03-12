@@ -10,4 +10,5 @@ export type ITokenConf = {
   balanceOf?: BigInt;
   balanceOfParsed?: number;
   isUserCustom?: boolean;
+  lastUpdate?: number; // the timestamp of last updated
 };

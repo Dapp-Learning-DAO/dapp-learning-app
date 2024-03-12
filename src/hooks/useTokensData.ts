@@ -1,4 +1,5 @@
 import {
+  TokensOptions as DefaultTokenOptions,
   TokensDecimals as DefaultTokenDecimals,
   TokensSymbols as DefaultTokenSymbols,
   TokenConf as DefaultTokenConf,
@@ -6,14 +7,15 @@ import {
   IChainTokenConfs,
 } from "config/tokens";
 import { LOCAL_CUSTOM_TOKENS_EVENT, localCustomTokens } from "context/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "react-use";
 import { erc20Abi, formatUnits, isAddress } from "viem";
 import { useAccount, useChainId, useReadContracts } from "wagmi";
 import { useCustomEvent } from "./useCustomEvent";
+import { ETH_TOKEN_ADDRESS } from "config/constants";
 
 export type IuseTokensDataProps = {
-  watchTokens?: Set<`0x${string}`>;
+  watchTokens?: boolean;
   showETH?: boolean;
 };
 
@@ -26,9 +28,6 @@ export default function useTokensData({
   const [readArgs, setReadArgs] = useState<any[]>([]);
   const [updateCount, setUpdateCount] = useState(0);
   const [tokenOptions, setTokenOptions] = useState<IChainTokenConfs>({});
-  const [tokenData, setTokenData] = useState<{
-    [key: `0x${string}`]: Token;
-  }>({});
   const [tokenSymbols, setTokenSymbols] = useState<{
     [key: `0x${string}`]: string;
   }>(DefaultTokenSymbols[chainId]);
@@ -48,7 +47,7 @@ export default function useTokensData({
       let _decimals: { [key: string]: number } = {};
       let _symbols: { [key: string]: string } = {};
       if (DefaultTokenDecimals[chainId] && DefaultTokenDecimals[chainId]) {
-        _tokenOptions = { ...DefaultTokenConf[chainId] };
+        _tokenOptions = { ...DefaultTokenOptions[chainId] };
         _symbols = { ...DefaultTokenSymbols[chainId] };
         _decimals = { ...DefaultTokenDecimals[chainId] };
       }
@@ -56,7 +55,7 @@ export default function useTokensData({
       let _tokenConfs = localCustomTokens.getTokensByChainId(chainId);
       if (_tokenConfs) {
         for (let _token of Object.values(_tokenConfs)) {
-          const _key = _token.symbol as string;
+          const _key = _token.address.toLowerCase() as string;
           _tokenOptions[_key] = new Token({ ..._token });
           _decimals[_key] = _token.decimals;
           _symbols[_key] = _token.symbol;
@@ -64,9 +63,10 @@ export default function useTokensData({
       }
 
       if (!showETH) {
-        delete _tokenOptions["ETH"];
-        delete _decimals["ETH"];
-        delete _symbols["ETH"];
+        const _eth_address = ETH_TOKEN_ADDRESS.toLowerCase();
+        delete _tokenOptions[_eth_address];
+        delete _decimals[_eth_address];
+        delete _symbols[_eth_address];
       }
 
       setTokenOptions(_tokenOptions);
@@ -89,23 +89,19 @@ export default function useTokensData({
     },
   });
 
+  const watchAddresses = useMemo(() => {
+    return Object.values(tokenOptions)
+      .filter((_t) => _t.needUpdate())
+      .map((_t) => _t.address.toLowerCase());
+  }, [tokenOptions]);
+
   useEffect(() => {
     if (!address || !watchTokens) return;
 
     let args: any[] = [];
-    let _tokenData = { ...tokenData };
 
-    for (let _token of watchTokens) {
+    for (let _token of watchAddresses) {
       if (isAddress(_token)) {
-        _tokenData[_token] = new Token({
-          chainId: chainId,
-          address: _token,
-          symbol: "",
-          decimals: 0,
-          name: "",
-          balanceOf: 0n,
-          balanceOfParsed: 0,
-        });
         args.push({
           address: _token,
           abi: erc20Abi,
@@ -130,16 +126,16 @@ export default function useTokensData({
       }
     }
     setReadArgs(args);
-  }, [watchTokens, address, tokenData]);
+  }, [watchTokens, watchAddresses, address, tokenOptions]);
 
   useEffect(() => {
     if (readData && watchTokens) {
       console.log("useTokensData readContracts res", readData);
-      let _tokenData = { ...tokenData };
+      let _tokenData = { ...tokenOptions };
       let _tokenDecimals = { ...tokenDecimals };
       let _tokenSymbols = { ...tokenSymbols };
       let ptr = 0;
-      for (let _token of watchTokens) {
+      for (let _token of watchAddresses) {
         if (isAddress(_token)) {
           const symbol = readData[ptr * 4 + 0]?.result;
           const decimals = Number(readData[ptr * 4 + 1]?.result);
@@ -149,17 +145,18 @@ export default function useTokensData({
             ptr++;
             continue;
           }
-          const _tokenDataRes: Token = new Token({
-            chainId,
-            address: _token,
-            symbol: symbol as string,
-            decimals,
-            name: name as string,
-            balanceOf: balanceOf as BigInt,
-            balanceOfParsed: balanceOf
-              ? Number(formatUnits(balanceOf as bigint, decimals).toString())
-              : 0,
-          });
+          let _tokenDataRes: Token = tokenOptions[_token];
+          if (!_tokenDataRes) {
+            _tokenDataRes = new Token({
+              chainId,
+              address: _token,
+              symbol: symbol as string,
+              decimals,
+              name: name as string,
+            });
+          }
+          _tokenDataRes.setBalanceOf(balanceOf as bigint);
+
           _tokenData[_token] = _tokenDataRes;
           _tokenDecimals[_token] = decimals;
           _tokenSymbols[_token] = symbol as string;
@@ -167,20 +164,20 @@ export default function useTokensData({
           ptr++;
         }
       }
-      setTokenData(_tokenData);
+      setTokenOptions(_tokenData);
       setTokenDecimals(_tokenDecimals);
       setTokenSymbols(_tokenSymbols);
     } else {
       if (isError || isLoading) {
-        setTokenData({});
-        setTokenDecimals(DefaultTokenDecimals);
-        setTokenSymbols(DefaultTokenSymbols);
+        setTokenOptions({ ...DefaultTokenOptions[chainId] });
+        setTokenDecimals({ ...DefaultTokenDecimals[chainId] });
+        setTokenSymbols({ ...DefaultTokenSymbols[chainId] });
       }
     }
+    setReadArgs([]);
   }, [readData]); // eslint-disable-line
 
   return {
-    tokenData,
     tokenSymbols,
     tokenDecimals,
     tokenOptions,

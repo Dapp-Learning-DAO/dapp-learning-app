@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDebounce } from "react-use";
 import { formatUnits, parseUnits } from "viem";
 import useTokenBalanceOf from "hooks/useTokenBalanceOf";
@@ -23,10 +23,27 @@ const useTokenAmountInput = ({
 }: useTokenAmountInputProps): useTokenAmountInputReturn => {
   const [amountParsed, setAmountParsed] = useState(0n);
 
-  const { balanceOf, isInsufficient } = useTokenBalanceOf({
+  const { balanceOf } = useTokenBalanceOf({
     tokenAddr: tokenObj ? (tokenObj.address as `0x${string}`) : undefined,
-    exceptedBalance: amountParsed,
   });
+
+  const isInsufficient = useMemo(() => {
+    if (typeof balanceOf !== "undefined") {
+      try {
+        if (
+          amountParsed &&
+          BigInt(amountParsed) > 0n &&
+          // @ts-ignore
+          BigInt(amountParsed) > amountParsed
+        ) {
+          return true;
+        }
+      } catch (error) {
+        console.error("setIsInsufficient error: ", error);
+      }
+    }
+    return false;
+  }, [amountParsed, balanceOf]);
 
   useDebounce(
     () => {

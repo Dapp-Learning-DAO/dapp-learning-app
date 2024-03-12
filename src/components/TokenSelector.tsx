@@ -16,14 +16,16 @@ import {
   useState,
 } from "react";
 import { getTokenIcon } from "utils/getTokenIcon";
-import { shortAddress } from "utils/index";
+import { formatBalanceParsed, shortAddress } from "utils/index";
 import { erc20Abi, isAddress } from "viem";
-import { useChainId, useReadContracts } from "wagmi";
+import { useAccount, useChainId, useReadContracts } from "wagmi";
 import useTokensData from "hooks/useTokensData";
 import { localCustomTokens } from "context/utils";
 import TokenAvatar from "./TokenAvatar";
 import { Token } from "config/tokens";
 import { useDebounce } from "react-use";
+
+export const TOKENS_DATA_KEY = "tokens_data";
 
 const TokenSelector = forwardRef(
   (
@@ -46,12 +48,12 @@ const TokenSelector = forwardRef(
     ref: any,
   ) => {
     const [isCustom, setIsCustom] = useState(false);
-    // const [curToken, setCurToken] = useState<Token | null>(null);
     const [searchValue, setSearchValue] = useState("");
 
     const chainId = useChainId();
+    const { address } = useAccount();
     const modalRef = useRef<ElementRef<"dialog">>(null);
-    const { tokenOptions } = useTokensData({ showETH });
+    const { tokenOptions } = useTokensData({ showETH, watchTokens: true });
 
     const { data: readRes, isLoading } = useReadContracts({
       allowFailure: false,
@@ -71,6 +73,12 @@ const TokenSelector = forwardRef(
           abi: erc20Abi,
           functionName: "decimals",
         },
+        {
+          address: searchValue as `0x${string}`,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [address as `0x${string}`],
+        },
       ],
       query: {
         enabled:
@@ -79,12 +87,13 @@ const TokenSelector = forwardRef(
     });
 
     const customTokenRes = useMemo(() => {
-      if (readRes && readRes.length == 3) {
+      if (readRes && readRes.length == 4) {
         const res = {
           address: searchValue,
           name: readRes[0] as string,
           symbol: readRes[1] as string,
           decimals: readRes[2] as number,
+          balanceOf: readRes[3] as bigint,
         };
         return res;
       }
@@ -95,14 +104,10 @@ const TokenSelector = forwardRef(
       (_token: Token | undefined) => {
         if (disabled) return;
         const targetToken =
-          _token && _token?.symbol ? tokenOptions[_token.symbol] : undefined;
+          _token && _token?.address
+            ? tokenOptions[_token.address.toLowerCase()]
+            : undefined;
         setCurToken(targetToken);
-        // if (onSelect) onSelect(targetToken ? targetToken : null);
-        // if (onChange) {
-        //   onChange({
-        //     target: { value: targetToken ? targetToken.address : "" },
-        //   } as ChangeEvent<HTMLInputElement>);
-        // }
         console.log("handleTokenSelect value", targetToken);
         if (targetToken) {
           setIsCustom(false);
@@ -126,6 +131,7 @@ const TokenSelector = forwardRef(
           decimals: customTokenRes?.decimals,
           isUserCustom: true,
         });
+        res.setBalanceOf(customTokenRes.balanceOf);
         if (!localCustomTokens.hasTokenByAddress(chainId, searchValue)) {
           localCustomTokens.addToken(chainId, res);
         }
@@ -300,14 +306,21 @@ const TokenSelector = forwardRef(
                           {shortAddress(m?.address)}
                         </p>
                       </div>
-                      {m.isUserCustom && (
-                        <button
-                          className="btn btn-ghost hover:bg-transparent"
-                          onClick={(e) => handleRemoveCustomToken(e, m)}
-                        >
-                          <XCircleIcon className="w-6 h-6 text-slate-500" />
-                        </button>
-                      )}
+                      <div className="text-right">
+                        {typeof m.balanceOfParsed !== "undefined" && (
+                          <p className="text-slate-600 text-right text-sm">
+                            {`${formatBalanceParsed(m.balanceOfParsed)}`}
+                          </p>
+                        )}
+                        {m.isUserCustom && (
+                          <button
+                            className="btn btn-ghost btn-sm hover:bg-transparent"
+                            onClick={(e) => handleRemoveCustomToken(e, m)}
+                          >
+                            <XCircleIcon className="w-6 h-6 text-slate-500" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
               </div>

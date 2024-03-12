@@ -59,7 +59,7 @@ export default function Avatar({ url, size, address, cid }: AvatarProp) {
             alt={`${url || address}`}
           />
         ) : isJazzAvatar && address ? (
-          <JazziconAvatar address={address} diameter={size / 2} />
+          <JazziconAvatar address={address} diameter={size} />
         ) : null}
         <div className="absolute top-0 left-0 w-full h-full">
           <div

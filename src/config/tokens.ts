@@ -1,6 +1,7 @@
 import { ITokenConf } from "types/tokenTypes";
 import { SupportedChainId } from "./chains";
 import { ETH_TOKEN_ADDRESS } from "./constants";
+import { formatUnits } from "viem";
 
 export class Token implements ITokenConf {
   chainId: SupportedChainId;
@@ -12,6 +13,7 @@ export class Token implements ITokenConf {
   balanceOf?: BigInt;
   balanceOfParsed?: number;
   isUserCustom?: boolean;
+  lastUpdate?: number | undefined;
 
   constructor({
     chainId,
@@ -33,6 +35,7 @@ export class Token implements ITokenConf {
     this.balanceOf = balanceOf;
     this.balanceOfParsed = balanceOfParsed;
     this.isUserCustom = isUserCustom;
+    this.lastUpdate = balanceOf ? new Date().getTime() : undefined;
   }
 
   equals(otherToken: ITokenConf): boolean {
@@ -45,6 +48,30 @@ export class Token implements ITokenConf {
   isETH(): boolean {
     return this.address.toLowerCase() === ETH_TOKEN_ADDRESS;
   }
+
+  setBalanceOf(balanceOf: bigint): void {
+    this.balanceOf = balanceOf;
+    this.balanceOfParsed = Number(formatUnits(balanceOf, this.decimals));
+    this.lastUpdate = balanceOf ? new Date().getTime() : undefined;
+  }
+
+  needUpdate(): boolean {
+    return (
+      !this.lastUpdate || new Date().getTime() - this.lastUpdate > 30 * 1000
+    );
+  }
+
+  toString(): string {
+    return JSON.stringify({
+      chainId: this.chainId,
+      address: this.address,
+      symbol: this.symbol,
+      name: this.name,
+      decimals: this.decimals,
+      logoURI: this.logoURI,
+      isUserCustom: this.isUserCustom,
+    });
+  }
 }
 
 export type IChainTokenConfs = { [key: string]: Token };
@@ -53,7 +80,7 @@ export type ITokenConfs = {
   [chainId: number | SupportedChainId]: IChainTokenConfs;
 };
 
-export let TokenConf: ITokenConfs = {
+export let TokenConf: ITokenConfs = Object.freeze({
   [SupportedChainId.OPTIMISM]: {
     ETH: new Token({
       chainId: SupportedChainId.OPTIMISM,
@@ -226,7 +253,7 @@ export let TokenConf: ITokenConfs = {
     }),
     // TST2 0xfFEe51237C25303798d098735C25c1F9A91a6e18
   },
-};
+});
 
 if (process.env.NEXT_PUBLIC_ENVIRONMENT === "development") {
   TokenConf[SupportedChainId.SCROLL].TestToken = new Token({
@@ -238,16 +265,21 @@ if (process.env.NEXT_PUBLIC_ENVIRONMENT === "development") {
   });
 }
 
+let _options: any = {};
 let _decimals: any = {};
 let _symbols: any = {};
 for (let _chainid in TokenConf) {
+  _options[_chainid] = {};
   _decimals[_chainid] = {};
   _symbols[_chainid] = {};
   for (let _token of Object.values(TokenConf[_chainid])) {
-    _decimals[_chainid][_token.address.toLowerCase()] = _token.decimals;
-    _symbols[_chainid][_token.address.toLowerCase()] = _token.symbol;
+    const _address = _token.address.toLowerCase();
+    _options[_chainid][_address] = _token;
+    _decimals[_chainid][_address] = _token.decimals;
+    _symbols[_chainid][_address] = _token.symbol;
   }
 }
 
+export const TokensOptions = _options;
 export const TokensDecimals = _decimals;
 export const TokensSymbols = _symbols;

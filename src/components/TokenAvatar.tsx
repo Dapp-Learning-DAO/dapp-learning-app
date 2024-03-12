@@ -39,7 +39,7 @@ const ChainAvatar = ({ chainId, size }: { chainId: number; size: number }) => {
         right: -4,
         width: imgSize,
         height: imgSize,
-        borderWidth: 1,
+        borderWidth: 1.5,
         borderRadius: 8,
         overflow: "hidden",
       }}
