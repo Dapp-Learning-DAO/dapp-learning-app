@@ -88,8 +88,10 @@ export default function CreateRedpacketPage() {
       const msg = "create write contract error: " + JSON.stringify(writeError);
       console.error(msg);
       // showAlertMsg(alertBoxRef, msg, "error");
+      reset(true);
     } else if (createWriteSimError) {
       console.error("create simulation error: ", createWriteSimError);
+      reset(true);
     }
   }, [writeError, createWriteSimError]);
 
@@ -101,13 +103,19 @@ export default function CreateRedpacketPage() {
     hash: createTx as `0x${string}`,
   });
 
-  const reset = useCallback(() => {
-    setSubmitClicked(false);
-    setFormData(null);
-    setIpfsCid(null);
-    writeReset();
-    setTs(Math.floor(new Date().getTime() / 1000));
-  }, [writeReset]);
+  const reset = useCallback(
+    (skipFormData?: boolean) => {
+      // (approveBtnRef?.current as any)?.refresh();
+      setSubmitClicked(false);
+      writeReset();
+      setTs(Math.floor(new Date().getTime() / 1000));
+      if (!skipFormData) {
+        setFormData(null);
+        setIpfsCid(null);
+      }
+    },
+    [writeReset],
+  );
 
   useEffect(() => {
     if (txRes || txIsError) {
@@ -260,7 +268,7 @@ export default function CreateRedpacketPage() {
               }}
             />
             <AlertBox ref={alertBoxRef} />
-            <div className="mb-4">
+            <div className="my-4">
               <ApproveBtn
                 ref={approveBtnRef}
                 // autoHidden

@@ -28,7 +28,7 @@ const ChainAvatar = ({ chainId, size }: { chainId: number; size: number }) => {
   const chainConf = chainsConf.find((_c) => _c.id == chainId);
   if (!chainConf) return <></>;
 
-  const imgSize = Math.max(20, size / 3);
+  const imgSize = Math.max(16, size / 3);
 
   return (
     <div
