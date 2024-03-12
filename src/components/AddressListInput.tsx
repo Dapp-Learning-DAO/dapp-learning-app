@@ -181,9 +181,15 @@ const AddressListInput = forwardRef(
               onChange={handleInputAddAddress}
               disabled={disabled}
             />
-            <div className="my-1 min-h-3 text-error font-bold text-sm">
-              {errorTxt}
-            </div>
+            {errorTxt ? (
+              <div className="my-1 min-h-3 text-error font-bold text-sm">
+                {errorTxt}
+              </div>
+            ) : (
+              <div className="my-1 min-h-3 text-slate-500 text-sm">
+                Press <kbd className="kbd kbd-sm">Enter</kbd> to confirm.
+              </div>
+            )}
           </>
         )}
         {mode == 1 && (

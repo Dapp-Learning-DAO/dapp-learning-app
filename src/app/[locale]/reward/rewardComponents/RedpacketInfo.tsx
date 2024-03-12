@@ -1,5 +1,6 @@
 "use client";
 
+import HexStringBox from "components/HexStringBox";
 import moment from "moment";
 import { IRewardClaimer, IRewardItem } from "types/rewardTypes";
 import { numAutoToFixed, shortAddress, shortRewardId } from "utils/index";
@@ -30,10 +31,7 @@ export default function RedPacketInfo({ item }: { item: IRewardItem }) {
           Name: <span className="font-bold">{item?.name}</span>
         </p>
         <p className="text-base leading-8">
-          Id:{" "}
-          <span style={{ fontSize: 13, wordBreak: "break-all" }}>
-            {item?.id}
-          </span>
+          Id: <HexStringBox hexString={item?.id} copyable />
         </p>
         <p className="text-lg leading-8 text-left">
           Claim Type: <span>{item?.ifRandom ? "Random" : "Fixed"}</span>
