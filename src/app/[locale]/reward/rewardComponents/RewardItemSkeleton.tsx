@@ -6,7 +6,7 @@ export default function RewardDetailSkeleton({
   return (
     <div
       className={`m-auto ${
-        !isModal ? "card border rounded-xl p-16 max-w-xl" : ""
+        !isModal ? "card border rounded-xl p-16 max-w-2xl" : ""
       }`}
       style={{ maxHeight: isModal ? "calc(100vh - 3em)" : "auto" }}
     >

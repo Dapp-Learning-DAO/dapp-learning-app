@@ -255,7 +255,7 @@ export default function CreateRedpacketPage() {
               ref={formRef}
               editDisabled={submitClicked || writeIsLoading || !!createTx}
               onChange={(data: IRewardCreateForm) => {
-                console.log("onFormChange", data);
+                // console.log("onFormChange", data);
                 setFormData(data);
               }}
             />

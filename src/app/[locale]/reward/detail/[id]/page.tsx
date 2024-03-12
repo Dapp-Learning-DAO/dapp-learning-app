@@ -54,7 +54,7 @@ export default function RewardDetailPage({
       ) : (
         <div
           className={`m-auto ${
-            !isModal ? "card border rounded-xl py-12 max-w-xl px-4" : ""
+            !isModal ? "card border rounded-xl py-12 max-w-2xl px-4" : ""
           }`}
           style={{ maxHeight: isModal ? "calc(100vh - 3em)" : "auto" }}
         >
