@@ -75,7 +75,7 @@ export default function RewardListPage() {
           </div>
         </div>
       </div>
-      <div className="pb-10 sm:pb-20">
+      <div className="pb-10 sm:pb-20 max-w-4xl mx-auto">
         {curTab == 0 && (
           <>
             {unclaimList.length == 0 && !loading && (
