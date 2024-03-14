@@ -30,6 +30,9 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
   const [unclaimList, setUnclaimList] = useState<IRewardItem[]>([]);
   const [claimedList, setClaimedList] = useState<IRewardItem[]>([]);
   const [expiredList, setExpiredList] = useState<IRewardItem[]>([]);
+  const [claimedExpiredList, setClaimedExpiredList] = useState<IRewardItem[]>(
+    [],
+  );
   const [createdList, setCreatedList] = useState<IRewardItem[]>([]);
   const [ipfsProgress, setIpfsProgress] = useState<number>(0);
   const [ipfsData, setIpfsData] = useState<IRewardIPFSData>({});
@@ -115,16 +118,17 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
         setIpfsData(_ipfsData);
       }
 
-      const processGqlData = (arr: any[]) => {
-        return arr.map((item: any) =>
+      const processGqlData = (arr: IRewardItem[]) => {
+        return arr.map((item: IRewardItem) =>
           processRedpacketItem(item, address, _blockts, _ipfsData),
         );
       };
 
-      let _unclaimList = [];
-      let _claimedList = [];
-      let _expiredList = [];
-      let _createdList = [];
+      let _unclaimList: IRewardItem[] = [];
+      let _claimedList: IRewardItem[] = [];
+      let _expiredList: IRewardItem[] = [];
+      let _createdList: IRewardItem[] = [];
+      let _claimedExpiredList: IRewardItem[] = [];
 
       if (data.Claimable) {
         _unclaimList = processGqlData(data.Claimable).filter(
@@ -146,11 +150,26 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
         _createdList = processGqlData(data.Created);
         setCreatedList(_createdList);
       }
+      if (_claimedList.length > 0 && _expiredList.length > 0) {
+        _claimedExpiredList = _claimedList
+          .concat(
+            _expiredList.filter(
+              (_expired) =>
+                !_claimedList
+                  .map((_claimed) => _claimed.id)
+                  .includes(_expired.id),
+            ),
+          )
+          .sort((a, b) => Number(b.creationTime) - Number(a.creationTime));
+        setClaimedExpiredList(_claimedExpiredList);
+      }
+
       console.log("useRedpacketLists data", {
         unclaimList: _unclaimList,
         claimedList: _claimedList,
         expiredList: _expiredList,
         createdList: _createdList,
+        claimedExpiredList: _claimedExpiredList,
       });
     },
     500,
@@ -171,6 +190,7 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
     claimedList,
     expiredList,
     createdList,
+    claimedExpiredList,
     ipfsData,
     loading: queryGqlLoading,
   };
@@ -265,7 +285,7 @@ export function processRedpacketItem(
   const isInClaimers = ipfsClaimers.some((_row) =>
     isAddressEqual(_row.address, address),
   );
-  const isClaimable = !isClaimed && !isExpired && isInClaimers;
+  const isClaimable = !isClaimed && !allClaimed && !isExpired && isInClaimers;
   const userClaimedValue = claimers.find((claimerItem: IRewardClaimer) =>
     isAddressEqual(claimerItem.address, address),
   )?.claimedValueParsed;
