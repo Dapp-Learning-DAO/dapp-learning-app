@@ -2,7 +2,6 @@
  * List of all the networks supported by the Uniswap Interface
  */
 export enum SupportedChainId {
-  MAINNET = 1,
   OPTIMISM = 10,
   ARBITRUM_ONE = 42161,
   ZKSYNC = 324,
@@ -11,7 +10,6 @@ export enum SupportedChainId {
 }
 
 export const CHAIN_IDS_TO_NAMES: { [chainId: number]: string } = {
-  [SupportedChainId.MAINNET]: "mainnet",
   [SupportedChainId.OPTIMISM]: "optimism",
   [SupportedChainId.ARBITRUM_ONE]: "arbitrum",
   [SupportedChainId.ZKSYNC]: "zksync",
@@ -33,7 +31,6 @@ export function isSupportedChain(
 }
 
 export const SUPPORTED_GAS_ESTIMATE_CHAIN_IDS = [
-  SupportedChainId.MAINNET,
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM_ONE,
   SupportedChainId.ZKSYNC,

@@ -9,7 +9,8 @@ import RedPacketItem from "./rewardComponents/RewardItem";
 import { useChainId } from "wagmi";
 import useRouteParams from "hooks/useRouteParams";
 
-const tabList = ["Claimable", "Claimed", "Expired", "Created"];
+// const tabList = ["Claimable", "Claimed", "Expired", "Created"];
+const tabList = ["Claimable", "Claimed/Expired", "Created"];
 
 export default function RewardListPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function RewardListPage() {
     claimedList,
     expiredList,
     createdList,
+    claimedExpiredList,
     ipfsData,
     loading,
   } = useRedpacketsLists({ enabled: true });
@@ -99,13 +101,13 @@ export default function RewardListPage() {
         )}
         {curTab == 1 && (
           <>
-            {claimedList.length == 0 && !loading && (
+            {claimedExpiredList.length == 0 && !loading && (
               <div className="w-full p-8 text-center text-slate-500">
                 no more redpacket
               </div>
             )}
             <div className="grid grid-cols-2 md:grid-cols-4">
-              {claimedList.map((item, index) => {
+              {claimedExpiredList.map((item, index) => {
                 return (
                   <Link
                     key={index}
@@ -119,27 +121,6 @@ export default function RewardListPage() {
           </>
         )}
         {curTab == 2 && (
-          <>
-            {expiredList.length == 0 && !loading && (
-              <div className="w-full p-8 text-center text-slate-500">
-                no more redpacket
-              </div>
-            )}
-            <div className="grid grid-cols-2 md:grid-cols-4">
-              {expiredList.map((item, index) => {
-                return (
-                  <Link
-                    key={index}
-                    href={`/reward/detail/${item.id}?chainId=${chainId}`}
-                  >
-                    <RedPacketItem item={item} />
-                  </Link>
-                );
-              })}
-            </div>
-          </>
-        )}
-        {curTab == 3 && (
           <>
             {createdList.length == 0 && !loading && (
               <div className="w-full p-8 text-center text-slate-500">
