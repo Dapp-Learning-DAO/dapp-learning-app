@@ -5,14 +5,11 @@ import { ETH_TOKEN_ADDRESS } from "config/constants";
 
 export default function useTokenBalanceOf({
   tokenAddr,
-  exceptedBalance,
 }: {
   tokenAddr: `0x${string}` | undefined;
-  exceptedBalance?: bigint;
 }) {
   const { address } = useAccount();
   const chainId = useChainId();
-  const [isInsufficient, setIsInsufficient] = useState(false);
   const [balanceOf, setBalanceOf] = useState<bigint | undefined>();
 
   const isETH = useMemo(
@@ -64,36 +61,17 @@ export default function useTokenBalanceOf({
       _balance = balanceOfRes;
     }
     setBalanceOf(_balance);
-    if (typeof _balance !== "undefined") {
-      try {
-        if (
-          exceptedBalance &&
-          BigInt(exceptedBalance) > 0n &&
-          // @ts-ignore
-          BigInt(exceptedBalance) > _balance
-        ) {
-          setIsInsufficient(true);
-        } else {
-          setIsInsufficient(false);
-        }
-      } catch (error) {
-        console.error("setIsInsufficient error: ", error);
-        setIsInsufficient(false);
-      }
-    }
   }, [
     tokenAddr,
     balanceOfRes,
     ethBalanceRes,
     isETH,
-    exceptedBalance,
     tokenBalanceLoading,
     ethBalanceLoading,
   ]);
 
   return {
     balanceOf,
-    isInsufficient,
     isLoading: tokenBalanceLoading || ethBalanceLoading,
   };
 }

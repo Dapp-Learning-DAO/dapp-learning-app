@@ -28,19 +28,19 @@ const ChainAvatar = ({ chainId, size }: { chainId: number; size: number }) => {
   const chainConf = chainsConf.find((_c) => _c.id == chainId);
   if (!chainConf) return <></>;
 
-  const imgSize = Math.max(12, size / 3);
+  const imgSize = Math.max(16, size / 3);
 
   return (
     <div
       className="absolute border border-white"
       style={{
         background: chainConf.iconBackground,
-        bottom: -2,
-        right: -2,
+        bottom: -4,
+        right: -4,
         width: imgSize,
         height: imgSize,
         borderWidth: 1.5,
-        borderRadius: 999,
+        borderRadius: 8,
         overflow: "hidden",
       }}
     >

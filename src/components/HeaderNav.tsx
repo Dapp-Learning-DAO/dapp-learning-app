@@ -19,14 +19,17 @@ const HeaderNav = forwardRef((props, ref: any) => {
       className="fixed z-10 top-0 right-0 left-0 px-2 sm:px-8 py-4 flex justify-between sm:justify-end items-center bg-base-100 sm:left-[220px]"
       // style={{ left: SIDE_NAV_WIDTH }}
     >
-      <div className="block sm:hidden">
+      <div className="block sm:hidden pr-4" style={{ maxWidth: `50%` }}>
         <Link href="/">
           <Image
-            className="h-8 w-auto"
-            src="/images/icon/192x192.png"
-            alt="Dapp-Learning"
-            height={56}
-            width={56}
+            className="w-full"
+            // src={`/images/nav-logo-${theme ? theme : "light"}.png`}
+            src={`${theme && theme === "dark" ? "/images/nav-logo-dark.svg" : "/images/nav-logo-light.png"}`}
+            style={{ objectFit: "contain" }}
+            width={784}
+            height={192}
+            alt="DappLearning logo"
+            priority
           />
         </Link>
       </div>

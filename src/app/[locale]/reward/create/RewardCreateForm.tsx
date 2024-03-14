@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, forwardRef, useCallback } from "react";
+import { useState, useEffect, forwardRef, useCallback, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Validate from "utils/validate";
 import TokenSelector from "components/TokenSelector";
@@ -12,6 +12,8 @@ import { MerkleTree } from "merkletreejs";
 import { hashToken } from "utils/getMerkleTree";
 import useTokenAmountInput from "hooks/useTokenAmountInput";
 import { Token } from "config/tokens";
+import { useChainId } from "wagmi";
+import { SupportedChainId } from "config/chains";
 
 const defaultValues: IRewardCreateForm = {
   isValid: false,
@@ -42,7 +44,9 @@ const RewardCreateForm = forwardRef(
     },
     ref: any,
   ) => {
+    const chainId = useChainId();
     const [enablePassword, setEnablePassword] = useState(false);
+    const [password, setPassword] = useState("");
     const [tokenObj, setTokenObj] = useState<Token | undefined>();
     const [changeCount, setChangeCount] = useState(0);
     const { calculatePublicSignals } = useZKsnark();
@@ -67,6 +71,16 @@ const RewardCreateForm = forwardRef(
       disabled: !!editDisabled,
       defaultValues,
     });
+
+    const zkEnabled = useMemo(() => {
+      if (chainId === SupportedChainId.ZKSYNC) {
+        setEnablePassword(false);
+        setValue("password", "");
+        return false;
+      } else {
+        return true;
+      }
+    }, [chainId, setEnablePassword, setValue]);
 
     const { balanceOf, maxBalance, isInsufficient, amountParsed } =
       useTokenAmountInput({
@@ -124,18 +138,18 @@ const RewardCreateForm = forwardRef(
     };
 
     // convert password to public signal
-    const handlePasswordChange = useCallback(
-      async (inputVal: string) => {
-        if (inputVal && Validate.isValidZKpasswordInput(inputVal)) {
-          const outputHash = await calculatePublicSignals(inputVal as string);
+    useDebounce(
+      async () => {
+        if (password && Validate.isValidZKpasswordInput(password)) {
+          const outputHash = await calculatePublicSignals(password as string);
           setValue("lockBytes", outputHash);
         } else {
-          debugger;
           setValue("lockBytes", null);
         }
         setChangeCount((prev) => prev + 1);
       },
-      [calculatePublicSignals, setValue],
+      500,
+      [calculatePublicSignals, setValue, password],
     );
 
     // generate merkle root
@@ -203,7 +217,9 @@ const RewardCreateForm = forwardRef(
               </span>
             )}
           </div>
-          <div className="flex flex-col justify-center gap-1 pb-2 mt-3">
+          <div
+            className={`flex flex-col justify-center gap-1 pb-2 mt-3 ${!zkEnabled ? "hidden" : ""}`}
+          >
             <div className="flex items-center">
               <span className="flex-1">
                 <strong>Password</strong>
@@ -238,7 +254,7 @@ const RewardCreateForm = forwardRef(
                 required: enablePassword,
                 disabled: editDisabled || !enablePassword,
                 maxLength: 40,
-                validate: (value, formValues) => {
+                validate: async (value, formValues) => {
                   if (formValues.enablePassword) {
                     if (!value) {
                       setError("password", {
@@ -264,7 +280,7 @@ const RewardCreateForm = forwardRef(
                   const _inputVal = e.target.value;
                   setValue("password", _inputVal);
                   await trigger("password");
-                  await handlePasswordChange(_inputVal);
+                  setPassword(_inputVal);
                 },
               })}
             />
@@ -329,14 +345,16 @@ const RewardCreateForm = forwardRef(
             )}
           </div>
           <div className="flex items-center justify-between my-3">
-            <strong>Use Random Mode</strong>
-            <label className="cursor-pointer label">
+            <strong>Redpacket Mode</strong>
+            <label className="cursor-pointer label flex">
+              <span className="mr-2">
+                {getValues("mode") ? "Random" : "Fixed"}
+              </span>
               <input
                 type="checkbox"
                 className="toggle toggle-primary"
                 defaultChecked={true}
                 {...register("mode", {
-                  required: true,
                   onChange: (e) => {
                     setValue("mode", e.target.checked);
                   },

@@ -15,7 +15,17 @@ import { isAddress } from "viem";
 // import Papa from 'papaparse';
 
 // mock address List
-// 0x1fae896f3041d7e8Bf5Db08cAd6518b0Eb82164a,0x17670B6512e68574eb5398d5117266F9D45aE637,0x0Eb330289A532a3da281717519b368c145De7fbA,0x0B1a5Fe4222b13ff1EbB0551b151d773D8Bae1b0
+/*
+0x1fae896f3041d7e8Bf5Db08cAd6518b0Eb82164a
+0x17670B6512e68574eb5398d5117266F9D45aE637
+0x0Eb330289A532a3da281717519b368c145De7fbA
+0x0B1a5Fe4222b13ff1EbB0551b151d773D8Bae1b0
+0x7504BfE553a89e453Fcd8886a91fEF50c038bf1c
+0x8A86ac46900a02c24F055C16F7E9b16d5A087BF3
+0x935c065054D5A23347980D4F9ef8509f5Ba645B7
+0x987bA39662536ED6e2c3be42D709e2F388dd28d5
+0x16240fA55E5A6bb3B458d65aDc06FfAb8C74A0Cc
+*/
 
 const AddressListInput = forwardRef(
   (
@@ -191,7 +201,7 @@ const AddressListInput = forwardRef(
             <div className="relative">
               <textarea
                 ref={textareaRef}
-                placeholder="input address and press enter"
+                placeholder="input address separated by comma, semicolon, or new line"
                 className="block w-full textarea textarea-bordered flex-1 pb-12 mr-4"
                 onChange={handleTextareaChange}
                 disabled={disabled}

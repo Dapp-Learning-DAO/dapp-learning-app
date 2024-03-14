@@ -6,6 +6,7 @@ export const NAV_LINKS = [
     navs: [
       // { name: "Home", link: "/" },
       { name: "Reward", link: "/reward" },
+      { name: "Bridge", link: "/bridge" },
     ],
   },
 ];

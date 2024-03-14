@@ -10,7 +10,16 @@ export const localCustomTokens = {
     return localStorage.getItem(LOCAL_CUSTOM_TOKENS_KEY);
   },
   set(tokens: ITokenConfs) {
-    localStorage.setItem(LOCAL_CUSTOM_TOKENS_KEY, JSON.stringify(tokens));
+    localStorage.setItem(
+      LOCAL_CUSTOM_TOKENS_KEY,
+      JSON.stringify(tokens, function (key, value) {
+        if (typeof value === "bigint") {
+          return value.toString();
+        } else {
+          return value;
+        }
+      }),
+    );
     emitCustomEvent(LOCAL_CUSTOM_TOKENS_EVENT, tokens);
   },
   getTokens(): ITokenConfs | null {

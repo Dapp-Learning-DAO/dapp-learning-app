@@ -6,7 +6,7 @@ import {
   AvatarComponent,
 } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { optimism, arbitrum, scroll, sepolia } from "wagmi/chains";
+import { optimism, arbitrum, zkSync, scroll, sepolia } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { http } from "viem";
 import Image from "next/image";
@@ -27,6 +27,12 @@ export const chainsConf = [
     hasIcon: true,
     iconBackground: "#96bedc",
     iconUrl: "/images/chainIcons/arbitrum.svg",
+  },
+  {
+    ...zkSync,
+    hasIcon: true,
+    iconBackground: "#F9F7EC",
+    iconUrl: "/images/chainIcons/zkSync.svg",
   },
   {
     ...scroll,
@@ -57,6 +63,7 @@ export const wagmiConfig = getDefaultConfig({
     [arbitrum.id]: http(
       `https://arb-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_KEY}`,
     ),
+    [zkSync.id]: http(`https://mainnet.era.zksync.io`),
     [scroll.id]: http(`https://rpc.scroll.io`),
     [sepolia.id]: http(
       `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_KEY}`,

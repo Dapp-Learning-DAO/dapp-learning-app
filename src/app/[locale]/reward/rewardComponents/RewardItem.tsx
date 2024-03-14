@@ -6,8 +6,9 @@ import SuccessIcon from "./RedpacketIcons/RedpacketSuccessIcon";
 import CoinIcon from "./RedpacketIcons/CoinIcon";
 import RedpacketZKIcon from "./RedpacketIcons/RedpacketZkIcon";
 import { numAutoToFixed } from "utils/index";
+import { IRewardItem } from "types/rewardTypes";
 
-export default function RedPacketItem({ item }: { item: any }) {
+export default function RedPacketItem({ item }: { item: IRewardItem }) {
   const ResState = () => {
     // @remind only show in created tab
     if (item.isCreator) {
@@ -57,7 +58,7 @@ export default function RedPacketItem({ item }: { item: any }) {
                   <CoinIcon className="w-5 h-5" />
                 </span>
                 <span className=" truncate mr-1 max-w-[100px]">
-                  {item?.claimedValueParsed > 0
+                  {item?.claimedValueParsed && item?.claimedValueParsed > 0
                     ? numAutoToFixed(item?.claimedValueParsed, 4)
                     : ""}
                 </span>{" "}
@@ -80,7 +81,9 @@ export default function RedPacketItem({ item }: { item: any }) {
           <SuccessIcon className="absolute top-[46px] left-1/2 -translate-x-[50%] justify-center text-green-400 bg-white rounded-full font-bold w-10 h-10" />
         )}
         <div className={`text-center items-center text-xs text-gray-500`}>
-          {moment(item?.createTime).format("MM-DD \u00A0 HH:mm")}
+          {moment(Number(item?.creationTime) * 1000).format(
+            "MM-DD \u00A0 HH:mm",
+          )}
         </div>
         {/*  truncate max-w-[300px] */}
         <div className="text-center">{item?.name}</div>

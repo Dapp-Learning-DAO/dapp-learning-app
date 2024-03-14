@@ -3,7 +3,7 @@ import { useQuery } from "@apollo/client";
 import { RedPacketsListsGraph } from "../gql/RedpacketGraph";
 import { useAccount, useChainId } from "wagmi";
 import { useEffect, useState } from "react";
-import { useDebounce } from "react-use";
+import { useDebounce, useInterval } from "react-use";
 import { formatUnits, isAddressEqual } from "viem";
 import { ZERO_BYTES32 } from "config/constants";
 import {
@@ -35,6 +35,13 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
   const [ipfsData, setIpfsData] = useState<IRewardIPFSData>({});
   const [refetchTriggered, setRefetchTriggered] = useState(false);
 
+  useInterval(
+    () => {
+      setExpiredTime(getExpTime());
+    },
+    (refetchTriggered ? 5 : 30) * 1000,
+  );
+
   const {
     data: RedPacketsGqlData,
     loading: queryGqlLoading,
@@ -48,7 +55,7 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
       creationTime_gt: 1708793830,
       msg_pre: REWARD_MSG_PRE,
     },
-    pollInterval: (refetchTriggered ? 5 : 30) * 1000,
+    // pollInterval: (refetchTriggered ? 5 : 30) * 1000,
     fetchPolicy: refetchTriggered ? "network-only" : "cache-first",
     context: { clientName: "RedPacket" },
     skip: !enabled || !address,
@@ -121,7 +128,7 @@ export default function useRedpacketsLists({ enabled }: { enabled: boolean }) {
 
       if (data.Claimable) {
         _unclaimList = processGqlData(data.Claimable).filter(
-          (_row) => _row.isClaimable,
+          (_row) => _row.isClaimable && !_row.isExpired,
         );
         setUnclaimList(_unclaimList);
       }

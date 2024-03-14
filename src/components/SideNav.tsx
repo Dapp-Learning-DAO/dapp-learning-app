@@ -62,7 +62,7 @@ const SideNav = forwardRef((props, ref: any) => {
       <ul>
         <li className="">
           <Link
-            href={"https://dapplearnig.org"}
+            href={"https://dapplearning.org/"}
             className="px-2 py-1 text-sm hover:underline rounded hover:text-primary relative cursor-pointer"
             target="_blank"
           >
