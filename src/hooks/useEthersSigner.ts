@@ -1,14 +1,10 @@
 "use client";
-import { Web3Provider } from "@ethersproject/providers";
-import { getWalletClient } from "@wagmi/core";
-import { wagmiConfig } from "provider/Web3Providers";
-import { useMemo } from "react";
-import { WalletClient } from "viem";
-import { useChainId, useWalletClient } from "wagmi";
+import { ExternalProvider, Web3Provider } from "@ethersproject/providers";
+import { useEffect, useMemo, useState } from "react";
 
-export function walletClientToSigner(walletClient?: WalletClient | null) {
-  if (walletClient) {
-    const provider = new Web3Provider(walletClient.transport, "any");
+export function walletClientToSigner(ethereum?: ExternalProvider | null) {
+  if (ethereum) {
+    const provider = new Web3Provider(ethereum, "any");
     const signer = provider.getSigner();
     return signer;
   } else {
@@ -16,17 +12,17 @@ export function walletClientToSigner(walletClient?: WalletClient | null) {
   }
 }
 
-export async function walletClientToSignerAsync(chainId?: number) {
-  const walletClient = await getWalletClient(wagmiConfig);
-  return walletClientToSigner(walletClient);
-}
-
 export function useEthersSigner() {
-  const chainId = useChainId();
-  const { data: walletClient } = useWalletClient({ chainId });
+  const [ethereum, setEthereum] = useState<ExternalProvider | undefined>();
+
+  useEffect(() => {
+    if (window?.ethereum) {
+      setEthereum(window.ethereum);
+    }
+  }, []);
 
   return useMemo(
-    () => (walletClient ? walletClientToSigner(walletClient) : undefined),
-    [walletClient],
+    () => (ethereum ? walletClientToSigner(ethereum) : undefined),
+    [ethereum],
   );
 }

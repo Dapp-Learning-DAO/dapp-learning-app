@@ -1,3 +1,26 @@
+import {
+  optimism,
+  arbitrum,
+  zkSync,
+  scroll,
+  sepolia,
+  mainnet,
+  polygon,
+  polygonZkEvm,
+  base,
+  avalanche,
+  linea,
+  gnosis,
+  fantom,
+  moonriver,
+  moonbeam,
+  fuse,
+  boba,
+  aurora,
+  metis,
+  Chain,
+} from "wagmi/chains";
+
 /**
  * List of all the networks supported by the Uniswap Interface
  */
@@ -62,3 +85,64 @@ export const L2_CHAIN_IDS = [
 ] as const;
 
 export type SupportedL2ChainId = (typeof L2_CHAIN_IDS)[number];
+
+export const defaultChainsConf = [
+  {
+    ...optimism,
+    hasIcon: true,
+    iconBackground: "#ff5a57",
+    iconUrl: "/images/chainIcons/optimism.svg",
+  },
+  {
+    ...arbitrum,
+    hasIcon: true,
+    iconBackground: "#96bedc",
+    iconUrl: "/images/chainIcons/arbitrum.svg",
+  },
+  {
+    ...zkSync,
+    hasIcon: true,
+    iconBackground: "#F9F7EC",
+    iconUrl: "/images/chainIcons/zkSync.svg",
+  },
+  {
+    ...scroll,
+    hasIcon: true,
+    iconBackground: "#edcca2",
+    iconUrl: "/images/chainIcons/scroll.svg",
+  },
+  {
+    ...sepolia,
+    hasIcon: true,
+    iconBackground: "#484c50",
+    iconUrl: "/images/chainIcons/ethereum.svg",
+  },
+];
+
+export const chainsConfByPathname: { [pathname: string]: Chain[] } = {
+  "/bridge": [
+    mainnet,
+    arbitrum,
+    optimism,
+    polygon,
+    zkSync,
+    polygonZkEvm,
+    base,
+    avalanche,
+    linea,
+    gnosis,
+    fantom,
+    moonriver,
+    moonbeam,
+    fuse,
+    boba,
+    aurora,
+    metis,
+  ],
+};
+
+export const getChainsConfByPathname = (pathname: string) => {
+  pathname = pathname.replace(/^\/(\w+)/, "");
+  if (chainsConfByPathname[pathname]) return chainsConfByPathname[pathname];
+  return defaultChainsConf;
+};

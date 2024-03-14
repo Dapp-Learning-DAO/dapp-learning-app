@@ -9,6 +9,8 @@ import { BOTTOM_LINKS, NAV_LINKS } from "config/ui";
 import { usePathname, useRouter } from "next/navigation";
 import useTheme from "hooks/useTheme";
 
+const HIDDEN_CONNECT_BTN_ROUTE = ["/bridge"];
+
 const HeaderNav = forwardRef((props, ref: any) => {
   const pathname = usePathname();
   const theme = useTheme();
@@ -34,7 +36,9 @@ const HeaderNav = forwardRef((props, ref: any) => {
           />
         </Link>
       </div>
-      <div className="flex-1 flex justify-end px-2">
+      <div
+        className={`flex-1 flex justify-end px-2 ${HIDDEN_CONNECT_BTN_ROUTE.includes(pathname.replace(/^\/(\w+)/, "")) ? "hidden" : ""}`}
+      >
         <ConnectButton
           accountStatus={{
             smallScreen: "avatar",
