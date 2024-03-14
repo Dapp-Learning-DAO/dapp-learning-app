@@ -1,7 +1,6 @@
 "use client";
 import { LiFiWidget, WidgetConfig } from "@lifi/widget";
-import { WidgetEvents } from "./WidgetEvents";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { useEthersSigner } from "hooks/useEthersSigner";
 
@@ -11,6 +10,9 @@ export const Widget = () => {
   const { connectAsync, connectors } = useConnect();
   const { disconnectAsync } = useDisconnect();
   const signer = useEthersSigner();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const widgetConfig = useMemo((): WidgetConfig => {
     return {
@@ -42,8 +44,9 @@ export const Widget = () => {
 
   return (
     <>
-      <WidgetEvents />
-      <LiFiWidget config={widgetConfig} integrator="nextjs-example" />
+      {mounted && (
+        <LiFiWidget config={widgetConfig} integrator="nextjs-example" />
+      )}
     </>
   );
 };

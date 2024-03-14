@@ -31,7 +31,7 @@ export default function Page() {
               swapping, bridging or crypto-native checkout experiences.
             </p>
             <div className="card-actions justify-end">
-              <Link href="/reward">
+              <Link href="/bridge">
                 <button className="btn btn-primary">Go</button>
               </Link>
             </div>
