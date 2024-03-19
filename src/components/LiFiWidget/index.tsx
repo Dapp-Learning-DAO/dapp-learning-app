@@ -5,6 +5,26 @@ import { useEffect, useMemo, useState } from "react";
 // import { useEthersSigner } from "hooks/useEthersSigner";
 import useTheme from "hooks/useTheme";
 
+const chainsIds = [
+  1, // mainnet
+  10, // Optimism
+  42161, // Arbitrum
+  137, // polygon
+  324, // zksync Era
+  1101, // Polygon zkEvm
+  8453, // Base
+  59144, // Linea
+  100, // Gnosis
+  43114, // Avalanche
+  56, // BSC
+  250, // Fantom
+  106, // Velas
+  122, // Fuse
+  288, // Boba
+  1284, // Moonbean
+  1666600000, // Harmony
+];
+
 export const Widget = () => {
   const theme = useTheme();
   // const { switchChainAsync } = useSwitchChain();
@@ -19,8 +39,8 @@ export const Widget = () => {
     return {
       integrator: "DappLearning",
       chains: {
-        deny: [56],
-        // allow: chainsConf.map((_c) => _c.id),
+        // deny: [56],
+        allow: chainsIds,
       },
       appearance: theme ? (theme as "light" | "dark") : "auto",
       // It can be either default, expandable, or drawer
@@ -67,7 +87,7 @@ export const Widget = () => {
   return (
     <>
       {mounted && (
-        <LiFiWidget config={widgetConfig} integrator="nextjs-example" />
+        <LiFiWidget config={widgetConfig} integrator="DappLearning" />
       )}
     </>
   );
