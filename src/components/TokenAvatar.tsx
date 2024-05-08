@@ -1,8 +1,8 @@
 import Image from "next/image";
-import { chainsConf } from "provider/Web3Providers";
 import { getTokenIcon } from "utils/getTokenIcon";
 import Avatar from "./Avatar";
 import { Token } from "config/tokens";
+import { defaultChainsConf } from "config/chains";
 
 const TokenAvatar = ({
   tokenData,
@@ -25,7 +25,7 @@ const TokenAvatar = ({
 
 const ChainAvatar = ({ chainId, size }: { chainId: number; size: number }) => {
   if (!chainId) return <></>;
-  const chainConf = chainsConf.find((_c) => _c.id == chainId);
+  const chainConf = defaultChainsConf.find((_c) => _c.id == chainId);
   if (!chainConf) return <></>;
 
   const imgSize = Math.max(16, size / 3);
