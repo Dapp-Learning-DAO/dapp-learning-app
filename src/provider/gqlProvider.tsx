@@ -12,7 +12,8 @@ import { SupportedChainId } from "config/chains";
 
 let subgraphRedPacketUri: { [key: number]: string } = {
   [SupportedChainId.OPTIMISM]:
-    "https://api.studio.thegraph.com/query/64274/optimism/version/latest",
+    // "https://api.studio.thegraph.com/query/64274/optimism/version/latest",
+    "https://gateway-arbitrum.network.thegraph.com/api/d0679befb8236ce4c611fbdba01de507/subgraphs/id/GQGA4HPArePsBccqZBqCrVaUmLQDutDyxrU9sfieQ7AH",
   [SupportedChainId.ARBITRUM_ONE]:
     "https://api.studio.thegraph.com/query/64274/arbitrum/version/latest",
   [SupportedChainId.SCROLL]:
